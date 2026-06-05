@@ -1,0 +1,23 @@
+include MANIFEST.in
+include README.md
+include license.txt
+include pyproject.toml
+include requirements.txt
+include setup.py
+
+recursive-include construction_marketplace *.py
+recursive-include construction_marketplace *.json
+recursive-include construction_marketplace *.js
+recursive-include construction_marketplace *.css
+recursive-include construction_marketplace *.html
+recursive-include construction_marketplace *.md
+recursive-include construction_marketplace *.txt
+recursive-include construction_marketplace *.svg
+recursive-include construction_marketplace *.png
+recursive-include construction_marketplace *.jpg
+recursive-include construction_marketplace *.gif
+recursive-include construction_marketplace *.ico
+recursive-include construction_marketplace *.woff
+recursive-include construction_marketplace *.woff2
+recursive-include construction_marketplace *.eot
+recursive-include construction_marketplace *.ttf

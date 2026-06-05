@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "construction_marketplace"
+authors = [
+    {name = "Sudhakar", email = ""},
+]
+description = "A comprehensive Construction Materials Marketplace application for Frappe/ERPNext v15+"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "GPL-3.0-only"}
+keywords = ["frappe", "erpnext", "construction", "marketplace"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Frappe",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "frappe>=15.0.0",
+]
+
+[project.urls]
+Repository = "https://github.com/Sudhakar1110/construction_marketplace"
+
+[tool.setuptools]
+packages = ["construction_marketplace"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["construction_marketplace*"]

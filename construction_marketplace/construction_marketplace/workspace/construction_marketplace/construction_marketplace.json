@@ -1,0 +1,216 @@
+{
+ "category": "Modules",
+ "charts": [
+  {
+   "chart_name": "Orders Overview",
+   "label": "Orders Overview"
+  },
+  {
+   "chart_name": "Popular Materials",
+   "label": "Popular Materials"
+  }
+ ],
+ "creation": "2024-01-01 00:00:00",
+ "developer_mode_only": 0,
+ "disable_user_customization": 0,
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "extends": "Construction Marketplace",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "icon": "octicon octicon-git-branch",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "label": "Construction Marketplace",
+ "links": [
+  {
+   "description": "Categories like Cement, Steel, Sand, Bricks",
+   "hidden": 0,
+   "icon": "bookmark",
+   "is_query_report": 0,
+   "label": "Material Categories",
+   "link_to": "Material Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Grades like OPC 53, Fe 500, etc.",
+   "hidden": 0,
+   "icon": "git-branch",
+   "is_query_report": 0,
+   "label": "Material Grades",
+   "link_to": "Material Grade",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Product catalog - Cement, Steel, Sand, Bricks, Blocks",
+   "hidden": 0,
+   "icon": "package",
+   "is_query_report": 0,
+   "label": "Construction Materials",
+   "link_to": "Construction Material",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Material suppliers and vendors",
+   "hidden": 0,
+   "icon": "organization",
+   "is_query_report": 0,
+   "label": "Suppliers",
+   "link_to": "Supplier",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Customers and buyers",
+   "hidden": 0,
+   "icon": "person",
+   "is_query_report": 0,
+   "label": "Marketplace Customers",
+   "link_to": "Marketplace Customer",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Customer orders for materials",
+   "hidden": 0,
+   "icon": "checklist",
+   "is_query_report": 0,
+   "label": "Marketplace Orders",
+   "link_to": "Marketplace Order",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Price quotes and inquiries",
+   "hidden": 0,
+   "icon": "question",
+   "is_query_report": 0,
+   "label": "Customer Enquiries",
+   "link_to": "Customer Enquiry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Material pricing from suppliers",
+   "hidden": 0,
+   "icon": "credit-card",
+   "is_query_report": 0,
+   "label": "Material Prices",
+   "link_to": "Material Price",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Delivery scheduling and tracking",
+   "hidden": 0,
+   "icon": "truck",
+   "is_query_report": 0,
+   "label": "Delivery Schedules",
+   "link_to": "Delivery Schedule",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Material quality inspections",
+   "hidden": 0,
+   "icon": "checklist",
+   "is_query_report": 0,
+   "label": "Quality Checks",
+   "link_to": "Quality Check",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Current stock levels of all materials",
+   "hidden": 0,
+   "icon": "chart",
+   "is_query_report": 0,
+   "label": "Material Stock Report",
+   "link_to": "Material Stock Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Sales data and analytics",
+   "hidden": 0,
+   "icon": "chart",
+   "is_query_report": 0,
+   "label": "Sales Analysis Report",
+   "link_to": "Sales Analysis Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Supplier performance metrics",
+   "hidden": 0,
+   "icon": "chart",
+   "is_query_report": 0,
+   "label": "Supplier Performance Report",
+   "link_to": "Supplier Performance Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Construction Marketplace",
+ "name": "Construction Marketplace",
+ "owner": "Administrator",
+ "pin_to_top": 1,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "New Order",
+   "link_to": "Marketplace Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "New Material",
+   "link_to": "Construction Material",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "New Supplier",
+   "link_to": "Supplier",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "New Customer",
+   "link_to": "Marketplace Customer",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Material Stock Report",
+   "link_to": "Material Stock Report",
+   "type": "Report"
+  },
+  {
+   "doc_view": "List",
+   "label": "Sales Analysis",
+   "link_to": "Sales Analysis Report",
+   "type": "Report"
+  }
+ ],
+ "type": "Workspace"
+}

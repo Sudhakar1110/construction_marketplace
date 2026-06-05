@@ -1,0 +1,34 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2024-01-01 00:00:00",
+ "date_changed": "order_date",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Marketplace Order",
+ "enabled": 1,
+ "event": "New",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>New Order Received</h3>\n\n<p>A new marketplace order has been placed.</p>\n\n<p><b>Order ID:</b> {{ doc.name }}</p>\n<p><b>Customer:</b> {{ doc.customer_name }}</p>\n<p><b>Order Date:</b> {{ doc.order_date }}</p>\n<p><b>Total Amount:</b> {{ doc.total_amount }}</p>\n<p><b>Status:</b> {{ doc.status }}</p>\n\n<h4>Order Items:</h4>\n{%- for item in doc.items -%}\n<p>{{ item.material_name }} - Qty: {{ item.quantity }} @ {{ item.rate }} = {{ item.amount }}</p>\n{%- endfor -%}\n\n<p>Please process the order at the earliest.</p>",
+ "method": "",
+ "modified": "2024-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Construction Marketplace",
+ "name": "New Order Alert",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "cc": "",
+   "condition": "",
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Construction Manager"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "",
+ "sender_email": "",
+ "subject": "New Order: {{ doc.name }} - {{ doc.customer_name }}"
+}

@@ -1,0 +1,34 @@
+{
+ "attach_print": 0,
+ "channel": "System Notification",
+ "creation": "2024-01-01 00:00:00",
+ "date_changed": "last_restock_date",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Construction Material",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>Low Stock Alert</h3>\n\n<p>The following materials are running low on stock:</p>\n\n<p><b>Material:</b> {{ doc.material_name }}</p>\n<p><b>Category:</b> {{ doc.material_category }}</p>\n<p><b>Grade:</b> {{ doc.material_grade }}</p>\n<p><b>Current Stock:</b> {{ doc.current_stock }}</p>\n<p><b>Reorder Level:</b> {{ doc.reorder_level }}</p>\n\n<p>Please arrange for restocking at the earliest.</p>",
+ "method": "construction_marketplace.construction_marketplace.tasks.check_low_stock",
+ "modified": "2024-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Construction Marketplace",
+ "name": "Low Stock Alert",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "cc": "",
+   "condition": "doc.current_stock <= doc.reorder_level if doc.reorder_level else doc.current_stock <= 10",
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Construction Manager"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Low Stock Alert: {{ doc.material_name }}"
+}

@@ -1,0 +1,6 @@
+# Patches for Construction Marketplace
+
+# Format: app_name.patches.module_name.patch_class_name
+
+# Example:
+# construction_marketplace.patches.v0_1.set_default_roles.SetDefaultRoles

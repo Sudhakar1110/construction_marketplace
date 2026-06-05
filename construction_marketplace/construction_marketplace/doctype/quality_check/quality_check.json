@@ -1,0 +1,203 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_inspection",
+  "naming_series",
+  "material",
+  "material_name",
+  "supplier",
+  "order",
+  "inspection_date",
+  "column_break_1",
+  "result",
+  "inspector_name",
+  "lot_number",
+  "section_quantities",
+  "quantity_checked",
+  "quantity_accepted",
+  "quantity_rejected",
+  "column_break_qty",
+  "sample_size",
+  "section_parameters",
+  "parameters",
+  "section_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_inspection",
+   "fieldtype": "Section Break",
+   "label": "Inspection Information"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "QC-.YYYY.-",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "material",
+   "fieldtype": "Link",
+   "label": "Construction Material",
+   "options": "Construction Material",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "material.material_name",
+   "fieldname": "material_name",
+   "fieldtype": "Data",
+   "label": "Material Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "order",
+   "fieldtype": "Link",
+   "label": "Marketplace Order",
+   "options": "Marketplace Order"
+  },
+  {
+   "default": "Today",
+   "fieldname": "inspection_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Inspection Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Result",
+   "options": "Pending\nAccepted\nRejected\nConditional",
+   "read_only": 1
+  },
+  {
+   "fieldname": "inspector_name",
+   "fieldtype": "Data",
+   "label": "Inspector Name"
+  },
+  {
+   "fieldname": "lot_number",
+   "fieldtype": "Data",
+   "label": "Lot/Batch Number"
+  },
+  {
+   "fieldname": "section_quantities",
+   "fieldtype": "Section Break",
+   "label": "Quantities"
+  },
+  {
+   "fieldname": "quantity_checked",
+   "fieldtype": "Float",
+   "label": "Quantity Checked"
+  },
+  {
+   "fieldname": "quantity_accepted",
+   "fieldtype": "Float",
+   "label": "Quantity Accepted"
+  },
+  {
+   "fieldname": "quantity_rejected",
+   "fieldtype": "Float",
+   "label": "Quantity Rejected"
+  },
+  {
+   "fieldname": "column_break_qty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sample_size",
+   "fieldtype": "Float",
+   "label": "Sample Size"
+  },
+  {
+   "fieldname": "section_parameters",
+   "fieldtype": "Section Break",
+   "label": "Quality Parameters"
+  },
+  {
+   "fieldname": "parameters",
+   "fieldtype": "Table",
+   "label": "Quality Check Parameters",
+   "options": "Quality Check Parameter"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text Editor",
+   "label": "Inspection Notes"
+  }
+ ],
+ "icon": "octicon octicon-checklist",
+ "index_web_pages_for_search": 1,
+ "modified": "2024-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Construction Marketplace",
+ "name": "Quality Check",
+ "naming_series": "QC-.YYYY.-",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Construction Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Supplier",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
