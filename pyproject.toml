@@ -24,8 +24,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-# Frappe is provided by the bench environment - no pip dependencies needed
-# dependencies = []
+# Frappe is provided by the bench environment
+dependencies = []
 
 [project.urls]
 Repository = "https://github.com/Sudhakar1110/construction_marketplace"
