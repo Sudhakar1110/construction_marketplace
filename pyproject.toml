@@ -30,9 +30,8 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/Sudhakar1110/construction_marketplace"
 
-[tool.setuptools]
-packages = ["construction_marketplace"]
-include-package-data = true
-
 [tool.setuptools.packages.find]
 include = ["construction_marketplace*"]
+
+[tool.setuptools.package-data]
+construction_marketplace = ["**/*"]
