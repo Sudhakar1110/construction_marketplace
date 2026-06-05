@@ -11,7 +11,8 @@ def after_install():
     create_default_roles()
     create_default_categories()
     create_default_grades()
-    create_demo_materials()
+    # Demo materials can be created after installation via:
+    # bench --site your-site execute construction_marketplace.install.create_demo_materials
 
 
 def create_default_roles():
