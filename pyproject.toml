@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "construction_marketplace"
 version = "0.1.0"
 authors = [
-    {name = "Sudhakar", email = ""},
+    {name = "Sudhakar"},
 ]
 description = "A comprehensive Construction Materials Marketplace application for Frappe/ERPNext v15+"
 readme = "README.md"
