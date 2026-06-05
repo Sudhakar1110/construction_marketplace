@@ -46,10 +46,6 @@ scheduler_events = {
 # ---------
 fixtures = [
     {"dt": "Role", "filters": [["name", "in", ["Construction Manager", "Supplier", "Customer"]]]},
-    {"dt": "Workflow"},
-    {"dt": "Workflow State"},
-    {"dt": "Workflow Action"},
-    {"dt": "Custom Field"},
 ]
 
 # Permissions
