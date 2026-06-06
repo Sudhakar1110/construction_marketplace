@@ -213,3 +213,227 @@ def create_demo_materials():
                 doc.insert(ignore_permissions=True)
     
     frappe.db.commit()
+
+
+def create_all_sample_data():
+    """
+    Create complete sample data for testing the marketplace.
+    Run this after app installation:
+    bench --site your-site execute construction_marketplace.install.create_all_sample_data
+    """
+    # Ensure base data exists
+    create_default_categories()
+    create_default_grades()
+    create_demo_materials()
+
+    # --- Create Suppliers ---
+    suppliers = [
+        {
+            "supplier_name": "BuildMart Supplies",
+            "company_name": "BuildMart Pvt Ltd",
+            "contact_person": "Ramesh Kumar",
+            "email": "ramesh@buildmart.com",
+            "phone": "9876543210",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "is_approved": 1,
+            "rating": 4.5
+        },
+        {
+            "supplier_name": "SteelKing Distributors",
+            "company_name": "SteelKing Ltd",
+            "contact_person": "Amit Singh",
+            "email": "amit@steelking.com",
+            "phone": "9876543211",
+            "city": "Delhi",
+            "state": "Delhi",
+            "country": "India",
+            "is_approved": 1,
+            "rating": 4.2
+        },
+        {
+            "supplier_name": "Prime Cement Traders",
+            "company_name": "Prime Cement Traders",
+            "contact_person": "Suresh Patel",
+            "email": "suresh@primecement.com",
+            "phone": "9876543212",
+            "city": "Ahmedabad",
+            "state": "Gujarat",
+            "country": "India",
+            "is_approved": 1,
+            "rating": 4.8
+        },
+        {
+            "supplier_name": "Sand Depot",
+            "company_name": "Sand Depot Pvt Ltd",
+            "contact_person": "Vikram Reddy",
+            "email": "vikram@sanddepot.com",
+            "phone": "9876543213",
+            "city": "Hyderabad",
+            "state": "Telangana",
+            "country": "India",
+            "is_approved": 1,
+            "rating": 4.0
+        },
+        {
+            "supplier_name": "BrickHouse Bricks",
+            "company_name": "BrickHouse Bricks Ltd",
+            "contact_person": "Mohan Das",
+            "email": "mohan@brickhouse.com",
+            "phone": "9876543214",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "country": "India",
+            "is_approved": 1,
+            "rating": 4.3
+        }
+    ]
+    
+    created_suppliers = {}
+    for s in suppliers:
+        if not frappe.db.exists("Supplier", s["supplier_name"]):
+            doc = frappe.get_doc({"doctype": "Supplier", **s})
+            doc.insert(ignore_permissions=True)
+            created_suppliers[s["supplier_name"]] = doc.name
+            print(f"✅ Created Supplier: {s['supplier_name']}")
+        else:
+            created_suppliers[s["supplier_name"]] = frappe.db.get_value("Supplier", {"supplier_name": s["supplier_name"]}, "name")
+            print(f"⏩ Supplier already exists: {s['supplier_name']}")
+
+    # --- Create Customers ---
+    customers = [
+        {
+            "customer_name": "Raj Constructions",
+            "company_name": "Raj Constructions Pvt Ltd",
+            "customer_type": "Builder",
+            "contact_person": "Rajesh Verma",
+            "email": "rajesh@rajconstructions.com",
+            "phone": "9988776655",
+            "city": "Pune",
+            "state": "Maharashtra",
+            "country": "India",
+            "is_verified": 1
+        },
+        {
+            "customer_name": "Greenfield Developers",
+            "company_name": "Greenfield Developers",
+            "customer_type": "Contractor",
+            "contact_person": "Priya Sharma",
+            "email": "priya@greenfield.com",
+            "phone": "9988776666",
+            "city": "Bangalore",
+            "state": "Karnataka",
+            "country": "India",
+            "is_verified": 1
+        },
+        {
+            "customer_name": "Urban Infrastructure",
+            "company_name": "Urban Infrastructure Ltd",
+            "customer_type": "Builder",
+            "contact_person": "Arun Nair",
+            "email": "arun@urbaninfra.com",
+            "phone": "9988776677",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "is_verified": 1
+        }
+    ]
+    
+    created_customers = {}
+    for c in customers:
+        if not frappe.db.exists("Marketplace Customer", c["customer_name"]):
+            doc = frappe.get_doc({"doctype": "Marketplace Customer", **c})
+            doc.insert(ignore_permissions=True)
+            created_customers[c["customer_name"]] = doc.name
+            print(f"✅ Created Customer: {c['customer_name']}")
+        else:
+            created_customers[c["customer_name"]] = frappe.db.get_value("Marketplace Customer", {"customer_name": c["customer_name"]}, "name")
+            print(f"⏩ Customer already exists: {c['customer_name']}")
+
+    # --- Create Material Prices ---
+    price_data = [
+        {"supplier": "BuildMart Supplies", "material": "Ultratech PPC Cement - PPC Grade", "price": 350, "uom": "Bag", "min_qty": 10},
+        {"supplier": "Prime Cement Traders", "material": "Ultratech PPC Cement - PPC Grade", "price": 340, "uom": "Bag", "min_qty": 20},
+        {"supplier": "BuildMart Supplies", "material": "ACC OPC 53 Grade Cement - OPC 53 Grade", "price": 380, "uom": "Bag", "min_qty": 10},
+        {"supplier": "Prime Cement Traders", "material": "ACC OPC 53 Grade Cement - OPC 53 Grade", "price": 370, "uom": "Bag", "min_qty": 20},
+        {"supplier": "SteelKing Distributors", "material": "JSW Fe 500D TMT Steel - Fe 500D", "price": 68000, "uom": "Ton", "min_qty": 1},
+        {"supplier": "SteelKing Distributors", "material": "Tata Tiscon Fe 500 TMT Steel - Fe 500", "price": 65000, "uom": "Ton", "min_qty": 1},
+        {"supplier": "Sand Depot", "material": "M Sand for Plastering - Plastering M Sand", "price": 45, "uom": "Cubic Feet", "min_qty": 50},
+        {"supplier": "Sand Depot", "material": "M Sand for Concrete - Concrete M Sand", "price": 52, "uom": "Cubic Feet", "min_qty": 50},
+        {"supplier": "BrickHouse Bricks", "material": "Wirecut Red Bricks - Wirecut Bricks", "price": 8, "uom": "Pieces", "min_qty": 500},
+        {"supplier": "BuildMart Supplies", "material": "AAC Lightweight Blocks - AAC Lightweight", "price": 55, "uom": "Pieces", "min_qty": 100}
+    ]
+
+    for p in price_data:
+        material_name = frappe.db.get_value("Construction Material", {"title": p["material"]}, "name")
+        supplier_name = created_suppliers.get(p["supplier"])
+        if material_name and supplier_name:
+            title = f"{p['material']} @ {p['supplier']}"
+            if not frappe.db.exists("Material Price", {"title": title}):
+                doc = frappe.get_doc({
+                    "doctype": "Material Price",
+                    "title": title,
+                    "material": material_name,
+                    "supplier": supplier_name,
+                    "price_per_unit": p["price"],
+                    "unit_of_measure": p["uom"],
+                    "minimum_order_qty": p["min_qty"],
+                    "is_active": 1
+                })
+                doc.insert(ignore_permissions=True)
+                print(f"✅ Created Price: {p['material']} @ {p['supplier']} = ₹{p['price']}")
+        else:
+            print(f"⚠️  Skipped price: {p['material']} - material or supplier not found")
+
+    # --- Create Sample Order ---
+    customer = created_customers.get("Raj Constructions")
+    if customer:
+        if not frappe.db.exists("Marketplace Order", {"customer": customer, "docstatus": 0}):
+            cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
+            steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
+            
+            if cement_item and steel_item:
+                order = frappe.get_doc({
+                    "doctype": "Marketplace Order",
+                    "customer": customer,
+                    "order_date": frappe.utils.nowdate(),
+                    "status": "Draft",
+                    "items": [
+                        {
+                            "item_code": cement_item,
+                            "item_name": "Ultratech PPC Cement - PPC Grade",
+                            "qty": 50,
+                            "rate": 350,
+                            "uom": "Bag",
+                            "amount": 17500
+                        },
+                        {
+                            "item_code": steel_item,
+                            "item_name": "JSW Fe 500D TMT Steel - Fe 500D",
+                            "qty": 2,
+                            "rate": 68000,
+                            "uom": "Ton",
+                            "amount": 136000
+                        }
+                    ],
+                    "total_amount": 153500,
+                    "net_amount": 153500,
+                    "delivery_city": "Pune",
+                    "delivery_state": "Maharashtra"
+                })
+                order.insert(ignore_permissions=True)
+                print(f"✅ Created Sample Order: {order.name} (₹{order.total_amount})")
+    else:
+        print("⚠️  Skipped order - customer 'Raj Constructions' not found")
+
+    frappe.db.commit()
+    print("\n" + "=" * 50)
+    print("🎉 ALL SAMPLE DATA CREATED SUCCESSFULLY!")
+    print("=" * 50)
+    print("📦 Materials: 8 demo materials")
+    print("🏭 Suppliers: 5 suppliers")
+    print("👥 Customers: 3 customers")
+    print("💰 Prices: 10 price records")
+    print("📋 Orders: 1 sample order with 2 items")
