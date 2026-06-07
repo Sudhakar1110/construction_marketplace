@@ -12,10 +12,10 @@
   "supplier_name",
   "supplier_contact",
   "order_date",
-  "expected_delivery_date",
-  "column_break_1",
+  "expected_delivery_date",   "column_break_1",
   "status",
   "marketplace_order",
+  "material_request",
   "payment_terms",
   "section_items",
   "items",
@@ -97,6 +97,12 @@
    "fieldtype": "Link",
    "label": "Marketplace Order",
    "options": "Marketplace Order"
+  },
+  {
+   "fieldname": "material_request",
+   "fieldtype": "Link",
+   "label": "Material Request",
+   "options": "Material Request"
   },
   {
    "fieldname": "payment_terms",

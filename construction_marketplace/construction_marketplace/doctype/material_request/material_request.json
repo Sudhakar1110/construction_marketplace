@@ -118,7 +118,7 @@
    "description": "Purchase orders created against this request",
    "group": "Purchasing",
    "link_doctype": "Purchase Order",
-   "link_fieldname": "marketplace_order"
+   "link_fieldname": "material_request"
   }
  ],
  "modified": "2024-01-01 00:00:00",

@@ -31,10 +31,6 @@ class MaterialRequest(Document):
             if item.qty and item.qty <= 0:
                 frappe.throw(_("Quantity must be greater than zero"))
     
-    def on_update(self):
-        """Update status to Approved when status changes"""
-        pass
-    
     def before_submit(self):
         if self.status == "Draft":
             self.status = "Approved"
