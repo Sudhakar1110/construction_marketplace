@@ -239,7 +239,7 @@ def _fix_child_table_modules():
     updated = 0
     for ct in child_tables:
         current_module = frappe.db.get_value("DocType", ct, "module")
-        if current_module and current_module != "Construction Marketplace":
+        if current_module != "Construction Marketplace":
             frappe.db.set_value("DocType", ct, "module", "Construction Marketplace")
             updated += 1
     if updated:
