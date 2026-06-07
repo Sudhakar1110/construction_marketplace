@@ -428,6 +428,72 @@ def create_all_sample_data():
     else:
         print("⚠️  Skipped order - customer 'Raj Constructions' not found")
 
+    # --- Create Sample Purchase Order ---
+    buildmart = created_suppliers.get("BuildMart Supplies")
+    steelking = created_suppliers.get("SteelKing Distributors")
+    if buildmart:
+        if not frappe.db.exists("Purchase Order", {"supplier": buildmart, "docstatus": 0}):
+            cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
+            sand_item = frappe.db.get_value("Construction Material", {"title": "M Sand for Plastering - Plastering M Sand"}, "name")
+            
+            if cement_item and sand_item:
+                po = frappe.get_doc({
+                    "doctype": "Purchase Order",
+                    "supplier": buildmart,
+                    "order_date": frappe.utils.nowdate(),
+                    "status": "Submitted",
+                    "payment_terms": "Net 30",
+                    "items": [
+                        {
+                            "item_code": cement_item,
+                            "qty": 100,
+                            "rate": 340,
+                            "amount": 34000
+                        },
+                        {
+                            "item_code": sand_item,
+                            "qty": 200,
+                            "rate": 42,
+                            "amount": 8400
+                        }
+                    ],
+                    "total_qty": 300,
+                    "total_amount": 42400,
+                    "net_amount": 42400
+                })
+                po.insert(ignore_permissions=True)
+                print(f"✅ Created Sample Purchase Order: {po.name} (₹{po.total_amount})")
+    
+    # --- Create Sample Material Request ---
+    if not frappe.db.exists("Material Request", {"requested_by": "Administrator", "docstatus": 0}):
+        steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
+        brick_item = frappe.db.get_value("Construction Material", {"title": "Wirecut Red Bricks - Wirecut Bricks"}, "name")
+        
+        if steel_item and brick_item:
+            mr = frappe.get_doc({
+                "doctype": "Material Request",
+                "requested_by": "Administrator",
+                "request_date": frappe.utils.nowdate(),
+                "required_by_date": frappe.utils.add_days(frappe.utils.nowdate(), 15),
+                "status": "Approved",
+                "priority": "High",
+                "for_project": "Greenfield Township Project",
+                "items": [
+                    {
+                        "item_code": steel_item,
+                        "qty": 5,
+                        "required_date": frappe.utils.add_days(frappe.utils.nowdate(), 10)
+                    },
+                    {
+                        "item_code": brick_item,
+                        "qty": 5000,
+                        "required_date": frappe.utils.add_days(frappe.utils.nowdate(), 20)
+                    }
+                ]
+            })
+            mr.insert(ignore_permissions=True)
+            print(f"✅ Created Sample Material Request: {mr.name}")
+
     frappe.db.commit()
     print("\n" + "=" * 50)
     print("🎉 ALL SAMPLE DATA CREATED SUCCESSFULLY!")
@@ -437,3 +503,5 @@ def create_all_sample_data():
     print("👥 Customers: 3 customers")
     print("💰 Prices: 10 price records")
     print("📋 Orders: 1 sample order with 2 items")
+    print("📄 Purchase Orders: 1 sample PO with 2 items")
+    print("📋 Material Requests: 1 sample MR with 2 items")

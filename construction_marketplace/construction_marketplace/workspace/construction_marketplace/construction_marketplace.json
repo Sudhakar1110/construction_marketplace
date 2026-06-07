@@ -135,6 +135,28 @@
    "type": "Link"
   },
   {
+   "description": "Purchase orders sent to suppliers for procurement",
+   "hidden": 0,
+   "icon": "file-text",
+   "is_query_report": 0,
+   "label": "Purchase Orders",
+   "link_to": "Purchase Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "description": "Internal material requests for procurement",
+   "hidden": 0,
+   "icon": "inbox",
+   "is_query_report": 0,
+   "label": "Material Requests",
+   "link_to": "Material Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
    "description": "Current stock levels of all materials",
    "hidden": 0,
    "icon": "chart",
@@ -210,6 +232,18 @@
    "label": "Sales Analysis",
    "link_to": "Sales Analysis Report",
    "type": "Report"
+  },
+  {
+   "doc_view": "List",
+   "label": "New Purchase Order",
+   "link_to": "Purchase Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "New Material Request",
+   "link_to": "Material Request",
+   "type": "DocType"
   }
  ],
  "type": "Workspace"
