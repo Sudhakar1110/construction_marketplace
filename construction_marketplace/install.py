@@ -440,14 +440,14 @@ def create_all_sample_data():
             frappe.db.sql("""
                 INSERT INTO `tabMarketplace Order`
                 (name, owner, creation, modified, modified_by, docstatus, idx,
-                 naming_series, customer, order_date, status, delivery_city, delivery_state,
+                 naming_series, customer, order_date, status, delivery_city,
                  total_amount, net_amount)
                 VALUES
                 (%s, %s, %s, %s, %s, 0, 0,
-                 'MORD-.YYYY.-', %s, %s, 'Draft', %s, %s,
+                 'MORD-.YYYY.-', %s, %s, 'Draft', %s,
                  153500, 153500)
             """, (order_name, user, now, now, user,
-                   customer, today, "Pune", "Maharashtra"))
+                   customer, today, "Pune"))
             
             # Insert order items directly
             item_idx = 1
