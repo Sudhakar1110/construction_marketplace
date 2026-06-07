@@ -221,12 +221,43 @@ def create_demo_materials():
     frappe.db.commit()
 
 
+def _fix_child_table_modules():
+    """Fix module assignment for child table doctypes in the database.
+    
+    On some Frappe installations, child table doctypes may have their
+    module field set to 'Core' instead of the correct module. This
+    helper updates them so Frappe can find their controllers.
+    """
+    child_tables = [
+        "Material Specification",
+        "Order Item",
+        "Delivery Item",
+        "Quality Check Parameter",
+        "Purchase Order Item",
+        "Material Request Item"
+    ]
+    updated = 0
+    for ct in child_tables:
+        current_module = frappe.db.get_value("DocType", ct, "module")
+        if current_module and current_module != "Construction Marketplace":
+            frappe.db.set_value("DocType", ct, "module", "Construction Marketplace")
+            updated += 1
+    if updated:
+        frappe.db.commit()
+        print(f"✅ Fixed module for {updated} child table doctypes")
+    else:
+        print("✅ All child table doctypes already have correct module")
+
+
 def create_all_sample_data():
     """
     Create complete sample data for testing the marketplace.
     Run this after app installation:
     bench --site your-site execute construction_marketplace.install.create_all_sample_data
     """
+    # Fix child table module paths before creating any data
+    _fix_child_table_modules()
+    
     # Ensure base data exists
     create_default_categories()
     create_default_grades()
