@@ -427,109 +427,137 @@ def create_all_sample_data():
     # --- Create Sample Order ---
     customer = created_customers.get("Raj Constructions")
     if customer:
-        if not frappe.db.exists("Marketplace Order", {"customer": customer, "docstatus": 0}):
-            cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
-            steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
+        cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
+        steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
+        
+        if cement_item and steel_item:
+            from frappe.model.naming import make_autoname
+            order_name = make_autoname("MORD-.YYYY.-")
+            now = frappe.utils.now()
+            today = frappe.utils.nowdate()
+            user = frappe.session.user
+
+            frappe.db.sql("""
+                INSERT INTO `tabMarketplace Order`
+                (name, owner, creation, modified, modified_by, docstatus, idx,
+                 naming_series, customer, order_date, status, delivery_city, delivery_state,
+                 total_amount, net_amount)
+                VALUES
+                (%s, %s, %s, %s, %s, 0, 0,
+                 'MORD-.YYYY.-', %s, %s, 'Draft', %s, %s,
+                 153500, 153500)
+            """, (order_name, user, now, now, user,
+                   customer, today, "Pune", "Maharashtra"))
             
-            if cement_item and steel_item:
-                order = frappe.get_doc({
-                    "doctype": "Marketplace Order",
-                    "customer": customer,
-                    "order_date": frappe.utils.nowdate(),
-                    "status": "Draft",
-                    "items": [
-                        {
-                            "item_code": cement_item,
-                            "item_name": "Ultratech PPC Cement - PPC Grade",
-                            "qty": 50,
-                            "rate": 350,
-                            "uom": "Bag",
-                            "amount": 17500
-                        },
-                        {
-                            "item_code": steel_item,
-                            "item_name": "JSW Fe 500D TMT Steel - Fe 500D",
-                            "qty": 2,
-                            "rate": 68000,
-                            "uom": "Ton",
-                            "amount": 136000
-                        }
-                    ],
-                    "total_amount": 153500,
-                    "net_amount": 153500,
-                    "delivery_city": "Pune",
-                    "delivery_state": "Maharashtra"
-                })
-                order.insert(ignore_permissions=True)
-                print(f"✅ Created Sample Order: {order.name} (₹{order.total_amount})")
-    else:
-        print("⚠️  Skipped order - customer 'Raj Constructions' not found")
+            # Insert order items directly
+            item_idx = 1
+            for item_data in [
+                (cement_item, "Ultratech PPC Cement - PPC Grade", 50, 350, "Bag", 17500),
+                (steel_item, "JSW Fe 500D TMT Steel - Fe 500D", 2, 68000, "Ton", 136000)
+            ]:
+                child_name = frappe.db.sql("""
+                    INSERT INTO `tabOrder Item`
+                    (name, owner, creation, modified, modified_by, docstatus, idx,
+                     parent, parentfield, parenttype, item_code, material_name, qty, rate, uom, amount)
+                    VALUES
+                    (%s, %s, %s, %s, %s, 0, %s,
+                     %s, 'items', 'Marketplace Order', %s, %s, %s, %s, %s, %s)
+                """, (
+                    f"{order_name}-{chr(64 + item_idx)}", user, now, now, user, item_idx,
+                    order_name, item_data[0], item_data[1], item_data[2], item_data[3], item_data[4], item_data[5]
+                ))
+                item_idx += 1
+            
+            print(f"✅ Created Sample Order: {order_name} (₹153500)")
 
     # --- Create Sample Purchase Order ---
     buildmart = created_suppliers.get("BuildMart Supplies")
-    steelking = created_suppliers.get("SteelKing Distributors")
     if buildmart:
-        if not frappe.db.exists("Purchase Order", {"supplier": buildmart, "docstatus": 0}):
-            cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
-            sand_item = frappe.db.get_value("Construction Material", {"title": "M Sand for Plastering - Plastering M Sand"}, "name")
+        cement_item = frappe.db.get_value("Construction Material", {"title": "Ultratech PPC Cement - PPC Grade"}, "name")
+        sand_item = frappe.db.get_value("Construction Material", {"title": "M Sand for Plastering - Plastering M Sand"}, "name")
+        
+        if cement_item and sand_item:
+            from frappe.model.naming import make_autoname
+            po_name = make_autoname("PO-.YYYY.-")
+            now = frappe.utils.now()
+            today = frappe.utils.nowdate()
+            user = frappe.session.user
+
+            frappe.db.sql("""
+                INSERT INTO `tabPurchase Order`
+                (name, owner, creation, modified, modified_by, docstatus, idx,
+                 naming_series, supplier, order_date, status, payment_terms,
+                 total_qty, total_amount, net_amount)
+                VALUES
+                (%s, %s, %s, %s, %s, 0, 0,
+                 'PO-.YYYY.-', %s, %s, 'Submitted', 'Net 30',
+                 300, 42400, 42400)
+            """, (po_name, user, now, now, user,
+                   buildmart, today))
             
-            if cement_item and sand_item:
-                po = frappe.get_doc({
-                    "doctype": "Purchase Order",
-                    "supplier": buildmart,
-                    "order_date": frappe.utils.nowdate(),
-                    "status": "Submitted",
-                    "payment_terms": "Net 30",
-                    "items": [
-                        {
-                            "item_code": cement_item,
-                            "qty": 100,
-                            "rate": 340,
-                            "amount": 34000
-                        },
-                        {
-                            "item_code": sand_item,
-                            "qty": 200,
-                            "rate": 42,
-                            "amount": 8400
-                        }
-                    ],
-                    "total_qty": 300,
-                    "total_amount": 42400,
-                    "net_amount": 42400
-                })
-                po.insert(ignore_permissions=True)
-                print(f"✅ Created Sample Purchase Order: {po.name} (₹{po.total_amount})")
+            # Insert PO items directly
+            item_idx = 1
+            for item_data in [
+                (cement_item, "Ultratech PPC Cement - PPC Grade", "Bag", 100, 340, 34000),
+                (sand_item, "M Sand for Plastering - Plastering M Sand", "Cubic Feet", 200, 42, 8400)
+            ]:
+                frappe.db.sql("""
+                    INSERT INTO `tabPurchase Order Item`
+                    (name, owner, creation, modified, modified_by, docstatus, idx,
+                     parent, parentfield, parenttype, item_code, material_name, unit_of_measure, qty, rate, amount)
+                    VALUES
+                    (%s, %s, %s, %s, %s, 0, %s,
+                     %s, 'items', 'Purchase Order', %s, %s, %s, %s, %s, %s)
+                """, (
+                    f"{po_name}-{chr(64 + item_idx)}", user, now, now, user, item_idx,
+                    po_name, item_data[0], item_data[1], item_data[2], item_data[3], item_data[4], item_data[5]
+                ))
+                item_idx += 1
+            
+            print(f"✅ Created Sample Purchase Order: {po_name} (₹42400)")
     
     # --- Create Sample Material Request ---
-    if not frappe.db.exists("Material Request", {"requested_by": "Administrator", "docstatus": 0}):
-        steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
-        brick_item = frappe.db.get_value("Construction Material", {"title": "Wirecut Red Bricks - Wirecut Bricks"}, "name")
+    steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
+    brick_item = frappe.db.get_value("Construction Material", {"title": "Wirecut Red Bricks - Wirecut Bricks"}, "name")
+    
+    if steel_item and brick_item:
+        from frappe.model.naming import make_autoname
+        mr_name = make_autoname("MREQ-.YYYY.-")
+        now = frappe.utils.now()
+        today = frappe.utils.nowdate()
+        required_by = frappe.utils.add_days(today, 15)
+        user = frappe.session.user
+
+        frappe.db.sql("""
+            INSERT INTO `tabMaterial Request`
+            (name, owner, creation, modified, modified_by, docstatus, idx,
+             naming_series, requested_by, request_date, required_by_date, status, priority, for_project)
+            VALUES
+            (%s, %s, %s, %s, %s, 0, 0,
+             'MREQ-.YYYY.-', %s, %s, %s, 'Approved', 'High', 'Greenfield Township Project')
+        """, (mr_name, user, now, now, user,
+               user, today, required_by))
         
-        if steel_item and brick_item:
-            mr = frappe.get_doc({
-                "doctype": "Material Request",
-                "requested_by": "Administrator",
-                "request_date": frappe.utils.nowdate(),
-                "required_by_date": frappe.utils.add_days(frappe.utils.nowdate(), 15),
-                "status": "Approved",
-                "priority": "High",
-                "for_project": "Greenfield Township Project",
-                "items": [
-                    {
-                        "item_code": steel_item,
-                        "qty": 5,
-                        "required_date": frappe.utils.add_days(frappe.utils.nowdate(), 10)
-                    },
-                    {
-                        "item_code": brick_item,
-                        "qty": 5000,
-                        "required_date": frappe.utils.add_days(frappe.utils.nowdate(), 20)
-                    }
-                ]
-            })
-            mr.insert(ignore_permissions=True)
-            print(f"✅ Created Sample Material Request: {mr.name}")
+        # Insert MR items directly
+        item_idx = 1
+        for item_data in [
+            (steel_item, "JSW Fe 500D TMT Steel - Fe 500D", "Ton", 5, frappe.utils.add_days(today, 10)),
+            (brick_item, "Wirecut Red Bricks - Wirecut Bricks", "Pieces", 5000, frappe.utils.add_days(today, 20))
+        ]:
+            frappe.db.sql("""
+                INSERT INTO `tabMaterial Request Item`
+                (name, owner, creation, modified, modified_by, docstatus, idx,
+                 parent, parentfield, parenttype, item_code, material_name, unit_of_measure, qty, required_date)
+                VALUES
+                (%s, %s, %s, %s, %s, 0, %s,
+                 %s, 'items', 'Material Request', %s, %s, %s, %s, %s)
+            """, (
+                f"{mr_name}-{chr(64 + item_idx)}", user, now, now, user, item_idx,
+                mr_name, item_data[0], item_data[1], item_data[2], item_data[3], item_data[4]
+            ))
+            item_idx += 1
+        
+        print(f"✅ Created Sample Material Request: {mr_name}")
 
     frappe.db.commit()
     print("\n" + "=" * 50)
