@@ -420,8 +420,11 @@ def create_all_sample_data():
                     "minimum_order_qty": p["min_qty"],
                     "is_active": 1
                 })
-                doc.insert(ignore_permissions=True)
-                print(f"✅ Created Price: {p['material']} @ {p['supplier']} = ₹{p['price']}")
+                try:
+                    doc.insert(ignore_permissions=True)
+                    print(f"✅ Created Price: {p['material']} @ {p['supplier']} = ₹{p['price']}")
+                except frappe.DuplicateEntryError:
+                    print(f"⏩ Price already exists: {p['material']} @ {p['supplier']} = ₹{p['price']}")
         else:
             print(f"⚠️  Skipped price: {p['material']} - material or supplier not found")
 
