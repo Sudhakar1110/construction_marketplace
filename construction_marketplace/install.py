@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.model.naming import make_autoname
 
 
 def after_install():
@@ -431,7 +432,6 @@ def create_all_sample_data():
         steel_item = frappe.db.get_value("Construction Material", {"title": "JSW Fe 500D TMT Steel - Fe 500D"}, "name")
         
         if cement_item and steel_item:
-            from frappe.model.naming import make_autoname
             order_name = make_autoname("MORD-.YYYY.-")
             now = frappe.utils.now()
             today = frappe.utils.nowdate()
@@ -458,7 +458,7 @@ def create_all_sample_data():
                 child_name = frappe.db.sql("""
                     INSERT INTO `tabOrder Item`
                     (name, owner, creation, modified, modified_by, docstatus, idx,
-                     parent, parentfield, parenttype, item_code, material_name, qty, rate, uom, amount)
+                     parent, parentfield, parenttype, item_code, material_name, quantity, rate, unit_of_measure, amount)
                     VALUES
                     (%s, %s, %s, %s, %s, 0, %s,
                      %s, 'items', 'Marketplace Order', %s, %s, %s, %s, %s, %s)
@@ -477,7 +477,6 @@ def create_all_sample_data():
         sand_item = frappe.db.get_value("Construction Material", {"title": "M Sand for Plastering - Plastering M Sand"}, "name")
         
         if cement_item and sand_item:
-            from frappe.model.naming import make_autoname
             po_name = make_autoname("PO-.YYYY.-")
             now = frappe.utils.now()
             today = frappe.utils.nowdate()
@@ -521,7 +520,6 @@ def create_all_sample_data():
     brick_item = frappe.db.get_value("Construction Material", {"title": "Wirecut Red Bricks - Wirecut Bricks"}, "name")
     
     if steel_item and brick_item:
-        from frappe.model.naming import make_autoname
         mr_name = make_autoname("MREQ-.YYYY.-")
         now = frappe.utils.now()
         today = frappe.utils.nowdate()
