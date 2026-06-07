@@ -208,8 +208,12 @@ def create_demo_materials():
                     "unit_of_measure": mat["uom"],
                     "reorder_level": mat["reorder_level"],
                     "is_active": 1,
-                    "current_stock": mat["reorder_level"] * 2
+                    "current_stock": mat["reorder_level"] * 2,
+                    "specifications": []
                 })
+                # Flag to skip _set_defaults() which can fail for child tables
+                # when the controller module path isn't found
+                doc.flags.ignore_set_defaults = True
                 doc.insert(ignore_permissions=True)
     
     frappe.db.commit()
