@@ -211,10 +211,12 @@ def create_demo_materials():
                     "current_stock": mat["reorder_level"] * 2,
                     "specifications": []
                 })
-                # Flag to skip _set_defaults() which can fail for child tables
-                # when the controller module path isn't found
-                doc.flags.ignore_set_defaults = True
+                # Use in_import flag to skip _set_defaults() which can fail
+                # when the child table controller module path isn't found
+                import_flag = frappe.flags.in_import
+                frappe.flags.in_import = True
                 doc.insert(ignore_permissions=True)
+                frappe.flags.in_import = import_flag
     
     frappe.db.commit()
 
