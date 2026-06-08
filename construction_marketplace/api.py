@@ -55,6 +55,7 @@ def get_material_details(material_id):
     material_id_escaped = escape(material_id)
     material = frappe.db.sql(f"""
         SELECT
+            cm.name as material_id,
             cm.name,
             cm.material_name,
             cm.title,
@@ -85,6 +86,7 @@ def get_material_details(material_id):
         try:
             material = frappe.db.sql(f"""
                 SELECT
+                    cm.name as material_id,
                     cm.name,
                     cm.material_name,
                     cm.title,
