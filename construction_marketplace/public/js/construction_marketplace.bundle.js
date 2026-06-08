@@ -267,6 +267,35 @@ construction_marketplace.floatingCart = {
     }
 };
 
+// ==================== WISHLIST FUNCTIONALITY ====================
+
+construction_marketplace.wishlist = {
+    initWishlistIcons: function() {
+        if (frappe.session.user === 'Guest') return;
+        
+        frappe.call({
+            method: "construction_marketplace.api.get_wishlist",
+            callback: function(r) {
+                if (r.message && r.message.items && r.message.items.length > 0) {
+                    var wishlistIds = {};
+                    r.message.items.forEach(function(item) {
+                        wishlistIds[item.material_id] = true;
+                    });
+                    
+                    $('.wishlist-btn').each(function() {
+                        var materialId = $(this).data('material');
+                        if (wishlistIds[materialId]) {
+                            var icon = $(this).find('i');
+                            icon.removeClass('far').addClass('fas text-danger');
+                            $(this).attr('title', 'Remove from Wishlist');
+                        }
+                    });
+                }
+            }
+        });
+    }
+};
+
 // ==================== PAGE INITIALIZATION ====================
 
 $(document).ready(function() {
@@ -275,6 +304,11 @@ $(document).ready(function() {
 
     // Initialize cart badge
     construction_marketplace.cart.initBadge();
+
+    // Initialize wishlist badges (pre-fill hearts for saved items)
+    setTimeout(function() {
+        construction_marketplace.wishlist.initWishlistIcons();
+    }, 600);
 
     // Initialize floating cart badge
     setTimeout(function() {
@@ -293,6 +327,52 @@ $(document).ready(function() {
             row.fadeOut(300, function() { $(this).remove(); });
             $(document).trigger('cart-updated');
         });
+    });
+
+    // Handle wishlist buttons (delegated) — toggle add/remove without unnecessary API call
+    $(document).on('click', '.wishlist-btn', function() {
+        if (frappe.session.user === 'Guest') {
+            construction_marketplace.utils.showToast('Please login to save items to wishlist', 'error');
+            return;
+        }
+        
+        var btn = $(this);
+        var materialId = btn.data('material');
+        var icon = btn.find('i');
+        var isFilled = icon.hasClass('fas');
+        
+        if (isFilled) {
+            // Remove from wishlist
+            frappe.call({
+                method: "construction_marketplace.api.remove_from_wishlist",
+                args: { material_id: materialId },
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        icon.removeClass('fas text-danger').addClass('far');
+                        btn.attr('title', 'Add to Wishlist');
+                        construction_marketplace.utils.showToast('Removed from wishlist', 'info');
+                        $(document).trigger('wishlist-updated');
+                    }
+                }
+            });
+        } else {
+            // Add to wishlist
+            frappe.call({
+                method: "construction_marketplace.api.add_to_wishlist",
+                args: { material_id: materialId },
+                callback: function(r) {
+                    if (r.message && r.message.success) {
+                        icon.removeClass('far').addClass('fas text-danger');
+                        btn.attr('title', 'Remove from Wishlist');
+                        construction_marketplace.utils.showToast(r.message.message || 'Added to wishlist', 'success');
+                        $(document).trigger('wishlist-updated');
+                    }
+                },
+                error: function() {
+                    construction_marketplace.utils.showToast('Please login to save items', 'error');
+                }
+            });
+        }
     });
 
     // Handle add to cart buttons (delegated) — redirects to checkout after adding

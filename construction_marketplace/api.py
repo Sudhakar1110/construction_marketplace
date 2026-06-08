@@ -596,6 +596,102 @@ def create_quote_request(customer_name, email, phone, material=None, quantity=No
     }
 
 
+# ==================== WISHLIST APIS ====================
+
+@frappe.whitelist()
+def get_wishlist():
+    """Get the current user's wishlist items"""
+    key = f"wishlist_{frappe.session.user}"
+    wishlist = frappe.cache().hget(key, "items")
+    if not wishlist:
+        return {"items": [], "count": 0}
+    
+    items = frappe.parse_json(wishlist) if isinstance(wishlist, str) else wishlist
+    return {"items": items, "count": len(items)}
+
+
+@frappe.whitelist()
+def add_to_wishlist(material_id, price_id=None):
+    """Add a material to the user's wishlist"""
+    if frappe.session.user == "Guest":
+        frappe.throw(_("Please login to save items to wishlist"), frappe.PermissionError)
+    
+    material = frappe.get_doc("Construction Material", material_id)
+    
+    key = f"wishlist_{frappe.session.user}"
+    wishlist_data = frappe.cache().hget(key, "items")
+    wishlist_items = frappe.parse_json(wishlist_data) if wishlist_data and isinstance(wishlist_data, str) else (wishlist_data or [])
+    if not isinstance(wishlist_items, list):
+        wishlist_items = []
+    
+    # Check if already in wishlist
+    for item in wishlist_items:
+        if item.get('material_id') == material_id:
+            return {
+                "success": True,
+                "in_wishlist": True,
+                "message": _("{0} is already in your wishlist").format(material.material_name),
+                "wishlist_count": len(wishlist_items)
+            }
+    
+    # Get min price info
+    min_price = frappe.db.get_value("Material Price", 
+        {"material": material_id, "is_active": 1, "docstatus": ["<", 2]}, 
+        "price_per_unit", order_by="price_per_unit ASC")
+    
+    # Get price_id if not provided
+    if not price_id:
+        price_info = frappe.db.get_value("Material Price",
+            {"material": material_id, "is_active": 1, "docstatus": ["<", 2]},
+            ["name", "price_per_unit", "unit_of_measure"], order_by="price_per_unit ASC", as_dict=True)
+        price_id = price_info.name if price_info else None
+        uom = price_info.unit_of_measure if price_info else material.unit_of_measure
+    else:
+        price_doc = frappe.get_doc("Material Price", price_id)
+        uom = price_doc.unit_of_measure
+    
+    wishlist_items.append({
+        "material_id": material.name,
+        "material_name": material.material_name,
+        "image": material.image,
+        "brand": material.brand,
+        "price_id": price_id,
+        "min_price": min_price,
+        "uom": uom or material.unit_of_measure,
+        "category": frappe.db.get_value("Material Category", material.material_category, "title") if material.material_category else ""
+    })
+    
+    frappe.cache().hset(key, "items", json.dumps(wishlist_items))
+    
+    return {
+        "success": True,
+        "in_wishlist": True,
+        "message": _("{0} added to wishlist").format(material.material_name),
+        "wishlist_count": len(wishlist_items)
+    }
+
+
+@frappe.whitelist()
+def remove_from_wishlist(material_id):
+    """Remove a material from the user's wishlist"""
+    key = f"wishlist_{frappe.session.user}"
+    wishlist_data = frappe.cache().hget(key, "items")
+    wishlist_items = frappe.parse_json(wishlist_data) if wishlist_data and isinstance(wishlist_data, str) else (wishlist_data or [])
+    if not isinstance(wishlist_items, list):
+        wishlist_items = []
+    
+    wishlist_items = [item for item in wishlist_items if item.get('material_id') != material_id]
+    
+    frappe.cache().hset(key, "items", json.dumps(wishlist_items))
+    
+    return {
+        "success": True,
+        "in_wishlist": False,
+        "message": _("Removed from wishlist"),
+        "wishlist_count": len(wishlist_items)
+    }
+
+
 # ==================== CART APIS ====================
 
 @frappe.whitelist()
@@ -898,9 +994,18 @@ def get_dashboard_stats():
     orders_count = frappe.db.count("Marketplace Order", {"customer": customer})
     enquiries_count = frappe.db.count("Customer Enquiry", {"customer": customer})
     
+    # Get wishlist count
+    wishlist_count = 0
+    wishlist_data = frappe.cache().hget(f"wishlist_{frappe.session.user}", "items")
+    if wishlist_data:
+        wishlist_items = frappe.parse_json(wishlist_data) if isinstance(wishlist_data, str) else wishlist_data
+        if isinstance(wishlist_items, list):
+            wishlist_count = len(wishlist_items)
+    
     return {
         "orders_count": orders_count,
         "enquiries_count": enquiries_count,
+        "wishlist_count": wishlist_count,
         "customer_name": frappe.db.get_value("Marketplace Customer", customer, "customer_name")
     }
 

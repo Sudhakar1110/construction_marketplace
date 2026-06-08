@@ -165,9 +165,10 @@ function renderMaterialDetails(m) {
             if(p.minimum_order_qty) html += '<div class="small text-muted mt-1">Min. Order: ' + p.minimum_order_qty + ' ' + (p.unit_of_measure || '') + '</div>';
             
             // Add to cart
-            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<div class="d-flex gap-2 mt-3 flex-wrap">';
             html += '<input type="number" class="qty-input" value="' + Math.max(1, p.minimum_order_qty || 1) + '" min="' + Math.max(1, p.minimum_order_qty || 1) + '" id="qty-' + p.price_id + '">';
             html += '<button class="btn btn-primary btn-sm rounded-pill px-4 add-to-cart" data-material="' + m.material_id + '" data-price="' + p.price_id + '"><i class="fas fa-shopping-cart me-1"></i> Add to Cart</button>';
+            html += '<button class="btn btn-outline-danger btn-sm rounded-pill wishlist-btn" data-material="' + m.material_id + '" title="Add to Wishlist"><i class="far fa-heart"></i></button>';
             html += '<button class="btn btn-outline-secondary btn-sm rounded-pill request-quote" data-material="' + m.material_id + '" data-price="' + p.price_id + '"><i class="fas fa-file-invoice me-1"></i> Quote</button>';
             html += '</div></div>';
         });
