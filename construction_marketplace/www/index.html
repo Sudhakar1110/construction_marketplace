@@ -466,7 +466,7 @@ $(document).ready(function() {
                     html += '<div class="product-footer">';
                     var detailUrl = m.route ? '/materials/' + m.route : '/materials/' + encodeURIComponent(m.material_id);
                     html += '<a href="' + detailUrl + '" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>';
-                    html += '<button class="btn btn-sm btn-primary add-to-cart-btn" data-material="' + m.material_id + '" data-route="' + (m.route || '') + '"><i class="fas fa-shopping-cart me-1"></i> Add</button>';
+                    html += '<button class="btn btn-sm btn-primary view-details-btn" data-material="' + m.material_id + '" data-route="' + (m.route || '') + '"><i class="fas fa-eye me-1"></i> View</button>';
                     html += '</div></div></div>';
                 });
                 $('#featured-materials').html(html);
@@ -532,8 +532,8 @@ $(document).ready(function() {
         }
     });
 
-    // Bind add to cart - redirect to material detail page
-    $(document).on('click', '.add-to-cart-btn', function() {
+    // Bind view details - redirect to material detail page
+    $(document).on('click', '.view-details-btn', function() {
         var btn = $(this);
         var materialId = btn.data('material');
         var route = btn.data('route');
