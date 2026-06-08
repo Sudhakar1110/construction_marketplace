@@ -1,0 +1,551 @@
+<!-- Construction Marketplace Home Page -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+/* Hero Banner */
+.hero-section {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('/assets/construction_marketplace/images/pattern.png') repeat;
+    opacity: 0.05;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-title { font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 1rem; }
+.hero-subtitle { font-size: 1.15rem; color: rgba(255,255,255,0.85); margin-bottom: 2rem; line-height: 1.6; }
+.hero-search { max-width: 650px; }
+.hero-search .input-group { border-radius: 50px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+.hero-search .form-control { border: none; padding: 18px 25px; font-size: 1.05rem; }
+.hero-search .btn-search { background: #ff6f00; color: #fff; border: none; padding: 0 35px; font-weight: 600; font-size: 1.05rem; }
+.hero-search .btn-search:hover { background: #e65100; }
+.hero-stats { margin-top: 3rem; }
+.hero-stat { text-align: center; color: #fff; padding: 0 1.5rem; border-right: 1px solid rgba(255,255,255,0.2); }
+.hero-stat:last-child { border-right: none; }
+.hero-stat-value { font-size: 2rem; font-weight: 800; display: block; }
+.hero-stat-label { font-size: 0.85rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Quick Links */
+.quick-links { margin-top: -40px; position: relative; z-index: 2; }
+.quick-link-card { background: #fff; border-radius: 12px; padding: 25px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease; cursor: pointer; height: 100%; }
+.quick-link-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+.quick-link-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; color: #fff; }
+.quick-link-card h6 { font-weight: 700; margin-bottom: 5px; color: #333; }
+.quick-link-card p { font-size: 0.82rem; color: #777; margin: 0; }
+
+/* Section Titles */
+.section-title { font-size: 2rem; font-weight: 800; color: #1a237e; margin-bottom: 0.5rem; }
+.section-subtitle { color: #666; font-size: 1.05rem; max-width: 600px; margin: 0 auto 2rem; }
+
+/* Category Cards */
+.category-card { position: relative; border-radius: 12px; overflow: hidden; height: 200px; cursor: pointer; transition: all 0.3s ease; }
+.category-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+.category-card .category-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; transition: transform 0.5s ease; }
+.category-card:hover .category-bg { transform: scale(1.1); }
+.category-card .category-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 100%); }
+.category-card .category-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; color: #fff; }
+.category-card .category-info h5 { font-weight: 700; margin: 0; }
+.category-card .category-info small { opacity: 0.85; }
+
+/* Product Cards */
+.product-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; height: 100%; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+.product-card .product-image { height: 200px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.product-card .product-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.product-card .product-body { padding: 18px; }
+.product-card .product-category { font-size: 0.78rem; color: #ff6f00; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.product-card .product-name { font-size: 1rem; font-weight: 700; color: #333; margin: 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-card .product-brand { font-size: 0.82rem; color: #888; }
+.product-card .product-price { font-size: 1.2rem; font-weight: 800; color: #1a237e; margin: 8px 0; }
+.product-card .product-footer { padding: 12px 18px; background: #fafafa; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.product-card .product-footer .btn-sm { border-radius: 20px; padding: 5px 18px; font-size: 0.82rem; }
+
+/* Supplier Cards */
+.supplier-card { background: #fff; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; height: 100%; }
+.supplier-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.supplier-card .supplier-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #1a237e, #3949ab); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; font-weight: 700; }
+.supplier-card h6 { font-weight: 700; color: #333; margin-bottom: 3px; }
+.supplier-card .supplier-location { font-size: 0.82rem; color: #888; }
+.supplier-card .supplier-rating { color: #ffa000; margin: 8px 0; }
+.supplier-card .supplier-products { font-size: 0.85rem; color: #666; }
+
+/* Testimonial Cards */
+.testimonial-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); height: 100%; }
+.testimonial-card .testimonial-stars { color: #ffa000; margin-bottom: 12px; }
+.testimonial-card .testimonial-text { font-size: 0.95rem; color: #555; line-height: 1.7; font-style: italic; }
+.testimonial-card .testimonial-author { margin-top: 15px; display: flex; align-items: center; gap: 12px; }
+.testimonial-card .testimonial-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #ff6f00, #ff8f00); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.testimonial-card .testimonial-name { font-weight: 700; color: #333; margin: 0; }
+.testimonial-card .testimonial-role { font-size: 0.82rem; color: #888; }
+
+/* Why Choose Us */
+.why-us-section { background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); }
+.feature-card { text-align: center; padding: 30px 20px; }
+.feature-icon { width: 70px; height: 70px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.8rem; color: #1a237e; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+.feature-card h5 { font-weight: 700; color: #333; margin-bottom: 8px; }
+.feature-card p { font-size: 0.9rem; color: #666; line-height: 1.6; }
+
+/* Service Provider Cards */
+.provider-card { background: #fff; border-radius: 12px; padding: 30px 20px; text-align: center; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; height: 100%; }
+.provider-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.provider-card .provider-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; color: #fff; }
+.provider-card h6 { font-weight: 700; color: #333; margin-bottom: 5px; }
+.provider-card p { font-size: 0.85rem; color: #777; margin: 0 0 12px; }
+
+/* CTA Section */
+.cta-section { background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%); padding: 60px 0; text-align: center; }
+.cta-section h2 { color: #fff; font-weight: 800; font-size: 2.2rem; margin-bottom: 1rem; }
+.cta-section p { color: rgba(255,255,255,0.85); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; }
+.cta-section .btn-cta { background: #ff6f00; color: #fff; border: none; padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; transition: all 0.3s ease; }
+.cta-section .btn-cta:hover { background: #e65100; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,111,0,0.4); }
+
+@media (max-width: 768px) {
+    .hero-title { font-size: 1.8rem; }
+    .hero-stat { padding: 0 0.8rem; }
+    .hero-stat-value { font-size: 1.4rem; }
+    .section-title { font-size: 1.5rem; }
+    .quick-links { margin-top: 20px; }
+    .quick-link-card { padding: 15px; }
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 hero-content">
+                <h1 class="hero-title">Your One-Stop Destination for Construction Materials & Services</h1>
+                <p class="hero-subtitle">Source premium construction materials, find trusted contractors, architects, and service providers all in one place. Quality assured, timely delivered.</p>
+                <div class="hero-search">
+                    <form action="/materials" method="GET">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="query" placeholder="Search materials, suppliers, services...">
+                            <button class="btn btn-search" type="submit">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <a href="/materials?category=Cement" class="badge bg-light text-dark p-2 text-decoration-none">Cement</a>
+                        <a href="/materials?category=TMT%20Steel" class="badge bg-light text-dark p-2 text-decoration-none">TMT Steel</a>
+                        <a href="/materials?category=M%20Sand" class="badge bg-light text-dark p-2 text-decoration-none">M Sand</a>
+                        <a href="/materials?category=Bricks" class="badge bg-light text-dark p-2 text-decoration-none">Bricks</a>
+                        <a href="/materials?category=Blocks" class="badge bg-light text-dark p-2 text-decoration-none">Blocks</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-image text-center">
+                    <img src="/assets/construction_marketplace/images/hero-illustration.png" alt="Construction" class="img-fluid" style="max-height:400px;" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+        <div class="hero-stats row mt-5 pt-3">
+            <div class="col-4 col-md-3 hero-stat">
+                <span class="hero-stat-value" id="stat-materials">500+</span>
+                <span class="hero-stat-label">Materials</span>
+            </div>
+            <div class="col-4 col-md-3 hero-stat">
+                <span class="hero-stat-value" id="stat-suppliers">100+</span>
+                <span class="hero-stat-label">Suppliers</span>
+            </div>
+            <div class="col-4 col-md-3 hero-stat">
+                <span class="hero-stat-value" id="stat-orders">1000+</span>
+                <span class="hero-stat-label">Orders Done</span>
+            </div>
+            <div class="col-md-3 hero-stat d-none d-md-block">
+                <span class="hero-stat-value" id="stat-cities">50+</span>
+                <span class="hero-stat-label">Cities Served</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Links -->
+<section class="quick-links">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <a href="/materials" class="text-decoration-none">
+                    <div class="quick-link-card">
+                        <div class="quick-link-icon" style="background: linear-gradient(135deg, #ff6f00, #ff8f00);">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <h6>Buy Materials</h6>
+                        <p>Cement, Steel, Sand & more</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/contractors" class="text-decoration-none">
+                    <div class="quick-link-card">
+                        <div class="quick-link-icon" style="background: linear-gradient(135deg, #1a237e, #3949ab);">
+                            <i class="fas fa-hard-hat"></i>
+                        </div>
+                        <h6>Find Contractors</h6>
+                        <p>Trusted construction experts</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/architects" class="text-decoration-none">
+                    <div class="quick-link-card">
+                        <div class="quick-link-icon" style="background: linear-gradient(135deg, #00897b, #26a69a);">
+                            <i class="fas fa-drafting-compass"></i>
+                        </div>
+                        <h6>Find Architects</h6>
+                        <p>Expert design professionals</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="/request-quote" class="text-decoration-none">
+                    <div class="quick-link-card">
+                        <div class="quick-link-icon" style="background: linear-gradient(135deg, #e53935, #ef5350);">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <h6>Request Quote</h6>
+                        <p>Get best price instantly</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Categories -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Popular Categories</h2>
+            <p class="section-subtitle">Browse through our wide range of construction materials and find everything you need for your project</p>
+        </div>
+        <div class="row g-3" id="categories-container">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Materials -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="section-title">Featured Materials</h2>
+                <p class="section-subtitle mb-0">Top quality construction materials at competitive prices</p>
+            </div>
+            <a href="/materials" class="btn btn-outline-primary rounded-pill px-4">View All <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+        <div class="row g-3" id="featured-materials">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-us-section py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Why Choose Us</h2>
+            <p class="section-subtitle">We make construction material procurement simple, transparent, and reliable</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                    <h5>Assured Quality</h5>
+                    <p>All materials are quality checked and certified to meet industry standards</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-truck"></i></div>
+                    <h5>Timely Delivery</h5>
+                    <p>On-time delivery guaranteed with real-time tracking of your orders</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-rupee-sign"></i></div>
+                    <h5>Best Prices</h5>
+                    <p>Compare prices from multiple suppliers and get the best deal</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                    <h5>24/7 Support</h5>
+                    <p>Dedicated support team to help you with orders and queries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top Suppliers -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="section-title">Top Suppliers</h2>
+                <p class="section-subtitle mb-0">Trusted suppliers with proven track record</p>
+            </div>
+            <a href="/marketplace" class="btn btn-outline-primary rounded-pill px-4">View All <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+        <div class="row g-3" id="top-suppliers">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Providers -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">Find Service Professionals</h2>
+            <p class="section-subtitle">Connect with trusted construction professionals for your project</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3 col-6">
+                <a href="/contractors" class="text-decoration-none">
+                    <div class="provider-card">
+                        <div class="provider-icon" style="background: linear-gradient(135deg, #1a237e, #3949ab);">
+                            <i class="fas fa-hard-hat"></i>
+                        </div>
+                        <h6>Contractors</h6>
+                        <p>Experienced construction contractors for all project types</p>
+                        <span class="badge bg-primary rounded-pill">Find Now →</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="/architects" class="text-decoration-none">
+                    <div class="provider-card">
+                        <div class="provider-icon" style="background: linear-gradient(135deg, #00897b, #26a69a);">
+                            <i class="fas fa-drafting-compass"></i>
+                        </div>
+                        <h6>Architects</h6>
+                        <p>Creative architects for residential and commercial design</p>
+                        <span class="badge bg-success rounded-pill">Find Now →</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="/interior-designers" class="text-decoration-none">
+                    <div class="provider-card">
+                        <div class="provider-icon" style="background: linear-gradient(135deg, #6a1b9a, #ab47bc);">
+                            <i class="fas fa-paint-roller"></i>
+                        </div>
+                        <h6>Interior Designers</h6>
+                        <p>Talented interior designers to transform your spaces</p>
+                        <span class="badge bg-purple rounded-pill" style="background:#6a1b9a;">Find Now →</span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="/request-quote" class="text-decoration-none">
+                    <div class="provider-card">
+                        <div class="provider-icon" style="background: linear-gradient(135deg, #e53935, #ef5350);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h6>Service Providers</h6>
+                        <p>Electrical, plumbing, painting and more services</p>
+                        <span class="badge bg-danger rounded-pill">Find Now →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="section-title">What Our Customers Say</h2>
+            <p class="section-subtitle">Hear from our happy customers about their experience</p>
+        </div>
+        <div class="row g-3" id="testimonials-container">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Start Your Construction Project?</h2>
+        <p>Join thousands of customers who trust us for their construction material needs. Get started today!</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="/register" class="btn btn-cta"><i class="fas fa-user-plus me-2"></i>Create Account</a>
+            <a href="/request-quote" class="btn btn-outline-light btn-lg rounded-pill px-5"><i class="fas fa-file-invoice me-2"></i>Request Quote</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    // Load categories
+    frappe.call({
+        method: "construction_marketplace.api.get_categories",
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                var html = '';
+                var colors = ['#ff6f00', '#1a237e', '#00897b', '#e53935', '#6a1b9a', '#2e7d32', '#00838f'];
+                var icons = ['fa-cubes', 'fa-weight-hanging', 'fa-water', 'fa-cube', 'fa-th-large', 'fa-mountain', 'fa-box'];
+                r.message.forEach(function(cat, i) {
+                    html += '<div class="col-md-4 col-lg-3 col-6">';
+                    html += '<a href="/materials?category=' + encodeURIComponent(cat.title) + '" class="text-decoration-none">';
+                    html += '<div class="category-card">';
+                    html += '<div class="category-bg" style="background: linear-gradient(135deg, ' + colors[i % colors.length] + ', ' + colors[(i+1) % colors.length] + ');"></div>';
+                    html += '<div class="category-overlay"></div>';
+                    html += '<div class="category-info">';
+                    html += '<h5>' + cat.title + '</h5>';
+                    html += '<small><i class="fas fa-box me-1"></i>' + (cat.material_count || 0) + ' Materials</small>';
+                    html += '</div></div></a></div>';
+                });
+                $('#categories-container').html(html);
+            }
+        }
+    });
+
+    // Load featured materials
+    frappe.call({
+        method: "construction_marketplace.api.get_featured_materials",
+        args: { limit: 8 },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                var html = '';
+                r.message.forEach(function(m) {
+                    html += '<div class="col-md-3 col-6">';
+                    html += '<div class="product-card">';
+                    html += '<div class="product-image">';
+                    if (m.image) {
+                        html += '<img src="' + m.image + '" alt="' + m.material_name + '">';
+                    } else {
+                        html += '<i class="fas fa-cubes" style="font-size:3rem;color:#ccc;"></i>';
+                    }
+                    html += '</div>';
+                    html += '<div class="product-body">';
+                    html += '<div class="product-category">' + (m.category || '') + '</div>';
+                    html += '<div class="product-name">' + m.material_name + '</div>';
+                    html += '<div class="product-brand">' + (m.brand ? 'Brand: ' + m.brand : '') + '</div>';
+                    if (m.min_price) {
+                        html += '<div class="product-price">₹ ' + formatCurrency(m.min_price) + '/' + m.unit_of_measure + '</div>';
+                    }
+                    html += '</div>';
+                    html += '<div class="product-footer">';
+                    html += '<a href="/materials/' + encodeURIComponent(m.material_id) + '" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>';
+                    html += '<button class="btn btn-sm btn-primary add-to-cart-btn" data-material="' + m.material_id + '"><i class="fas fa-shopping-cart me-1"></i> Add</button>';
+                    html += '</div></div></div>';
+                });
+                $('#featured-materials').html(html);
+            }
+        }
+    });
+
+    // Load top suppliers
+    frappe.call({
+        method: "construction_marketplace.api.get_top_suppliers",
+        args: { limit: 6 },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                var html = '';
+                r.message.forEach(function(s) {
+                    var initials = (s.supplier_name || '').split(' ').map(function(w) { return w[0]; }).join('').slice(0,2);
+                    html += '<div class="col-md-4 col-6">';
+                    html += '<div class="supplier-card">';
+                    html += '<div class="supplier-avatar">' + initials + '</div>';
+                    html += '<h6>' + s.supplier_name + '</h6>';
+                    html += '<div class="supplier-location"><i class="fas fa-map-marker-alt me-1"></i>' + (s.city || 'N/A') + '</div>';
+                    html += '<div class="supplier-rating">';
+                    for (var i = 0; i < 5; i++) {
+                        html += '<i class="fas fa-star' + (i < Math.round(s.rating || 0) ? '' : ' far') + '"></i> ';
+                    }
+                    html += '</div>';
+                    html += '<div class="supplier-products"><i class="fas fa-box me-1"></i>' + (s.product_count || 0) + ' Products</div>';
+                    html += '<a href="/materials?supplier=' + encodeURIComponent(s.supplier_id) + '" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">View Products</a>';
+                    html += '</div></div>';
+                });
+                $('#top-suppliers').html(html);
+            } else {
+                $('#top-suppliers').html('<div class="col-12 text-center py-3"><p class="text-muted">No suppliers available yet.</p></div>');
+            }
+        }
+    });
+
+    // Load testimonials
+    frappe.call({
+        method: "construction_marketplace.api.get_testimonials",
+        args: { limit: 4 },
+        callback: function(r) {
+            if (r.message && r.message.length > 0) {
+                var html = '';
+                r.message.forEach(function(t) {
+                    var initials = t.name.split(' ').map(function(w) { return w[0]; }).join('');
+                    html += '<div class="col-md-3">';
+                    html += '<div class="testimonial-card">';
+                    html += '<div class="testimonial-stars">';
+                    for (var i = 0; i < t.rating; i++) {
+                        html += '<i class="fas fa-star"></i> ';
+                    }
+                    html += '</div>';
+                    html += '<div class="testimonial-text">"' + t.content + '"</div>';
+                    html += '<div class="testimonial-author">';
+                    html += '<div class="testimonial-avatar">' + initials.slice(0,2) + '</div>';
+                    html += '<div><div class="testimonial-name">' + t.name + '</div>';
+                    html += '<div class="testimonial-role">' + t.role + '</div></div>';
+                    html += '</div></div></div>';
+                });
+                $('#testimonials-container').html(html);
+            }
+        }
+    });
+
+    // Bind add to cart
+    $(document).on('click', '.add-to-cart-btn', function() {
+        var btn = $(this);
+        var materialId = btn.data('material');
+        if (!materialId) return;
+        
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Adding...');
+        
+        // Need a price ID - open the material page to select supplier
+        window.location.href = '/materials/' + encodeURIComponent(materialId);
+    });
+});
+
+function formatCurrency(amount) {
+    return Number(amount).toLocaleString('en-IN');
+}
+</script>
+{% endblock %}

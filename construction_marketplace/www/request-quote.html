@@ -1,0 +1,189 @@
+<!-- Construction Marketplace - Request Quote -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.quote-header { background: linear-gradient(135deg, #e53935 0%, #ef5350 100%); padding: 40px 0; color: #fff; }
+.quote-form { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+.quote-form label { font-weight: 600; color: #333; font-size: 0.9rem; }
+.quote-form .form-control, .quote-form .form-select { border-radius: 8px; border: 1px solid #e0e0e0; padding: 10px 15px; }
+.quote-form .form-control:focus, .quote-form .form-select:focus { border-color: #1a237e; box-shadow: 0 0 0 0.2rem rgba(26,35,126,0.1); }
+.quote-form textarea { min-height: 100px; }
+.upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+.upload-area:hover { border-color: #1a237e; background: #f8f9ff; }
+.upload-area i { font-size: 2.5rem; color: #1a237e; }
+.upload-area p { color: #666; margin: 10px 0 0; }
+.upload-area small { color: #999; }
+.info-card { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.info-card h6 { font-weight: 700; color: #333; margin-bottom: 10px; }
+.info-card ul { padding-left: 20px; color: #666; font-size: 0.9rem; }
+.info-card ul li { margin-bottom: 6px; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="quote-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb bg-transparent p-0 mb-2"><li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li><li class="breadcrumb-item active text-white">Request Quote</li></ol></nav>
+        <h1 class="fw-bold mb-2">Request a Quote</h1>
+        <p class="mb-0 opacity-75">Get the best prices from verified suppliers for your construction needs</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="quote-form">
+                    <h4 class="fw-bold mb-4"><i class="fas fa-file-invoice me-2"></i>Submit Your Requirements</h4>
+                    <div id="success-message" class="alert alert-success d-none"></div>
+                    <div id="error-message" class="alert alert-danger d-none"></div>
+                    
+                    <form id="quote-form" onsubmit="return submitQuote(event)">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="customer-name" required placeholder="Enter your full name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" required placeholder="Enter your email">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Material / Service Required *</label>
+                                <select class="form-select" id="material" required>
+                                    <option value="">Select material or service...</option>
+                                    <option value="Cement">Cement</option>
+                                    <option value="TMT Steel">TMT Steel</option>
+                                    <option value="M Sand">M Sand</option>
+                                    <option value="Bricks">Bricks</option>
+                                    <option value="Blocks">Blocks</option>
+                                    <option value="Jelly Stones">Jelly Stones</option>
+                                    <option value="Other Material">Other Material</option>
+                                    <option value="Contractor Service">Contractor Service</option>
+                                    <option value="Architect Service">Architect Service</option>
+                                    <option value="Interior Design">Interior Design</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Quantity Required</label>
+                                <input type="number" class="form-control" id="quantity" placeholder="Enter quantity" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Delivery Address</label>
+                                <input type="text" class="form-control" id="delivery-address" placeholder="Enter delivery address">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description / Requirements</label>
+                            <textarea class="form-control" id="description" placeholder="Describe your requirements in detail..."></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Upload Plans / Drawings / BOQ (optional)</label>
+                            <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload files or drag & drop</p>
+                                <small>Supported: PDF, DWG, JPG, PNG (Max 10MB)</small>
+                                <input type="file" id="file-upload" class="d-none" multiple accept=".pdf,.dwg,.jpg,.jpeg,.png">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill" id="submit-btn">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Quote Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="info-card">
+                    <h6><i class="fas fa-clock me-2"></i>Quick Response</h6>
+                    <p class="small text-muted">Get quotes from multiple verified suppliers within 24 hours.</p>
+                </div>
+                <div class="info-card">
+                    <h6><i class="fas fa-check-circle me-2"></i>Why Request a Quote?</h6>
+                    <ul>
+                        <li>Compare prices from multiple suppliers</li>
+                        <li>Get customized pricing for bulk orders</li>
+                        <li>Receive expert recommendations</li>
+                        <li>No obligation to purchase</li>
+                        <li>Free consultation available</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h6><i class="fas fa-phone me-2"></i>Need Quick Help?</h6>
+                    <p class="small text-muted mb-1">Call us for immediate assistance:</p>
+                    <p class="fw-bold mb-0" style="color:#1a237e;">+91 98765 43210</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var materialParam = urlParams.get('material');
+    if(materialParam) {
+        // Try to set the material select based on category
+        var materialName = decodeURIComponent(materialParam);
+        $('#material option').each(function() {
+            if($(this).val().toLowerCase() === materialName.toLowerCase()) {
+                $(this).prop('selected', true);
+            }
+        });
+    }
+});
+
+function submitQuote(e) {
+    e.preventDefault();
+    var btn = $('#submit-btn');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Submitting...');
+    
+    var name = $('#customer-name').val();
+    var email = $('#email').val();
+    var phone = $('#phone').val();
+    var material = $('#material').val();
+    var quantity = $('#quantity').val();
+    var address = $('#delivery-address').val();
+    var description = $('#description').val();
+    
+    frappe.call({
+        method: "construction_marketplace.api.create_quote_request",
+        args: {
+            customer_name: name,
+            email: email,
+            phone: phone,
+            material: material,
+            quantity: quantity || null,
+            description: description,
+            delivery_address: address
+        },
+        callback: function(r) {
+            if(r.message && r.message.success) {
+                $('#success-message').removeClass('d-none').html('<i class="fas fa-check-circle me-2"></i>' + r.message.message);
+                $('#quote-form')[0].reset();
+                $('#error-message').addClass('d-none');
+            }
+        },
+        error: function(e) {
+            $('#error-message').removeClass('d-none').text('Error submitting request. Please try again.');
+        },
+        always: function() {
+            btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Submit Quote Request');
+        }
+    });
+    
+    return false;
+}
+</script>
+{% endblock %}

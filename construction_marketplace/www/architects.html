@@ -1,0 +1,97 @@
+<!-- Construction Marketplace - Architect Directory -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.provider-header { background: linear-gradient(135deg, #00897b 0%, #26a69a 100%); padding: 40px 0; color: #fff; }
+.architect-card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; height: 100%; }
+.architect-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.architect-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #00897b, #26a69a); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
+.architect-name { font-size: 1.1rem; font-weight: 700; color: #333; }
+.verified-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="provider-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb bg-transparent p-0 mb-2"><li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li><li class="breadcrumb-item active text-white">Architects</li></ol></nav>
+        <h1 class="fw-bold mb-2">Architect Directory</h1>
+        <p class="mb-0 opacity-75">Connect with experienced architects for your residential and commercial projects</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-8 mb-2 mb-md-0">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-location" placeholder="Search by city or location...">
+                    <button class="btn btn-primary" id="search-btn"><i class="fas fa-search me-1"></i> Search</button>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3" id="architects-grid">
+            <div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+        </div>
+        <nav class="mt-4"><ul class="pagination justify-content-center" id="pagination"></ul></nav>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+var currentPage = 1, totalPages = 1;
+$(document).ready(function() {
+    loadArchitects();
+    $('#search-btn').click(function() { currentPage = 1; loadArchitects(); });
+    $('#search-location').keyup(function(e) { if(e.keyCode === 13) { currentPage = 1; loadArchitects(); } });
+});
+
+function loadArchitects() {
+    var location = $('#search-location').val();
+    $('#architects-grid').html('<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>');
+    frappe.call({
+        method: "construction_marketplace.api.get_architects",
+        args: { location: location || null, page: currentPage },
+        callback: function(r) { if(r.message) renderArchitects(r.message); }
+    });
+}
+
+function renderArchitects(data) {
+    var architects = data.architects || [];
+    totalPages = data.total_pages || 1;
+    if(architects.length === 0) {
+        $('#architects-grid').html('<div class="col-12 text-center py-5"><i class="fas fa-drafting-compass" style="font-size:3rem;color:#ddd;"></i><h5 class="mt-3 text-muted">No architects found</h5></div>');
+        $('#pagination').empty(); return;
+    }
+    var html = '';
+    architects.forEach(function(a) {
+        var initials = (a.customer_name || '').split(' ').map(w => w[0]).join('').slice(0,2);
+        html += '<div class="col-md-6 col-lg-4"><div class="architect-card">';
+        html += '<div class="d-flex align-items-center gap-3 mb-3">';
+        html += '<div class="architect-avatar">' + initials + '</div>';
+        html += '<div><div class="architect-name">' + a.customer_name + '</div>';
+        if(a.company_name) html += '<div class="small text-muted">' + a.company_name + '</div>';
+        if(a.is_verified) html += '<span class="verified-badge mt-1 d-inline-block"><i class="fas fa-check-circle me-1"></i>Verified</span>';
+        html += '</div></div>';
+        html += '<div class="small text-muted mb-2"><i class="fas fa-map-marker-alt me-1"></i> ' + (a.city || '') + (a.state ? ', ' + a.state : '') + '</div>';
+        if(a.portfolio_description) html += '<p class="small text-muted mt-2">' + a.portfolio_description.slice(0, 150) + '</p>';
+        html += '<div class="mt-3"><a href="/request-quote?architect=' + encodeURIComponent(a.customer_name) + '" class="btn btn-outline-primary btn-sm rounded-pill"><i class="fas fa-envelope me-1"></i> Contact</a></div>';
+        html += '</div></div>';
+    });
+    $('#architects-grid').html(html);
+    renderPagination();
+}
+
+function renderPagination() {
+    var html = '<li class="page-item ' + (currentPage <= 1 ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="' + (currentPage-1) + '">«</a></li>';
+    for(var i = Math.max(1, currentPage-3); i <= Math.min(totalPages, currentPage+3); i++) {
+        html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+    }
+    html += '<li class="page-item ' + (currentPage >= totalPages ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="' + (currentPage+1) + '">»</a></li>';
+    $('#pagination').html(html);
+    $('.page-link').click(function(e) { e.preventDefault(); if($(this).parent().hasClass('disabled')) return; currentPage = parseInt($(this).data('page')); loadArchitects(); window.scrollTo({top:0,behavior:'smooth'}); });
+}
+</script>
+{% endblock %}

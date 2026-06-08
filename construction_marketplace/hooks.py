@@ -21,12 +21,6 @@ app_include_css = [
     "construction_marketplace.bundle.css"
 ]
 
-# Website
-website_context = {
-    "favicon": "/assets/construction_marketplace/images/favicon.png",
-    "splash_image": "/assets/construction_marketplace/images/splash.png"
-}
-
 # DocType Class
 # -----------------
 doc_events = {}
@@ -66,4 +60,13 @@ after_install = "construction_marketplace.install.after_install"
 
 # Website
 # -------
-# (disabled until configured as website generator)
+website_context = {
+    "favicon": "/assets/construction_marketplace/images/favicon.png",
+    "splash_image": "/assets/construction_marketplace/images/splash.png",
+    "navbar_search": True,
+    "navbar_search_placeholder": "Search materials, suppliers...",
+    "hide_login": 0,
+}
+
+# Website route rules for dynamic pages
+# website_route_rules can be defined here for custom routing

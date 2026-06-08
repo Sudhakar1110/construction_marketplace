@@ -1,0 +1,92 @@
+<!-- Construction Marketplace - Project Showcase -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.projects-header { background: linear-gradient(135deg, #e65100 0%, #ff6f00 100%); padding: 40px 0; color: #fff; }
+.project-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; height: 100%; }
+.project-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.project-image { height: 180px; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; }
+.project-body { padding: 20px; }
+.project-title { font-weight: 700; color: #333; font-size: 1.05rem; }
+.project-meta { font-size: 0.85rem; color: #666; margin-top: 8px; }
+.project-meta i { width: 18px; color: #ff6f00; }
+.project-status { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="projects-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb bg-transparent p-0 mb-2"><li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li><li class="breadcrumb-item active text-white">Projects</li></ol></nav>
+        <h1 class="fw-bold mb-2">Project Showcase</h1>
+        <p class="mb-0 opacity-75">Explore completed and ongoing construction projects</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row g-3" id="projects-grid">
+            <div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+        </div>
+        <nav class="mt-4"><ul class="pagination justify-content-center" id="pagination"></ul></nav>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+var currentPage = 1, totalPages = 1;
+$(document).ready(function() { loadProjects(); });
+
+function loadProjects() {
+    $('#projects-grid').html('<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>');
+    frappe.call({
+        method: "construction_marketplace.api.get_projects",
+        args: { page: currentPage },
+        callback: function(r) {
+            if(r.message) renderProjects(r.message);
+        }
+    });
+}
+
+function renderProjects(data) {
+    var projects = data.projects || [];
+    totalPages = data.total_pages || 1;
+    if(projects.length === 0) {
+        $('#projects-grid').html('<div class="col-12 text-center py-5"><i class="fas fa-hard-hat" style="font-size:3rem;color:#ddd;"></i><h5 class="mt-3 text-muted">No projects yet</h5></div>');
+        $('#pagination').empty(); return;
+    }
+    var html = '';
+    projects.forEach(function(p) {
+        var statusColor = {Draft:'warning',Confirmed:'info',Processing:'primary',Shipped:'purple',Delivered:'success',Cancelled:'danger'};
+        var color = statusColor[p.status] || 'secondary';
+        html += '<div class="col-md-6 col-lg-4"><div class="project-card position-relative">';
+        html += '<span class="badge bg-' + color + ' project-status">' + p.status + '</span>';
+        html += '<div class="project-image"><i class="fas fa-building" style="font-size:3rem;color:#bbb;"></i></div>';
+        html += '<div class="project-body">';
+        html += '<div class="project-title">Project: ' + p.project_id + '</div>';
+        html += '<div class="project-meta"><i class="fas fa-user me-1"></i> ' + (p.customer_name || 'N/A') + '</div>';
+        html += '<div class="project-meta"><i class="fas fa-calendar me-1"></i> ' + p.order_date + '</div>';
+        if(p.delivery_city) html += '<div class="project-meta"><i class="fas fa-map-marker-alt me-1"></i> ' + p.delivery_city + '</div>';
+        if(p.total_amount) html += '<div class="project-meta"><i class="fas fa-rupee-sign me-1"></i> ₹ ' + formatCurrency(p.total_amount) + '</div>';
+        html += '<div class="project-meta"><i class="fas fa-box me-1"></i> ' + (p.item_count || 0) + ' Items</div>';
+        html += '</div></div></div>';
+    });
+    $('#projects-grid').html(html);
+    renderPagination();
+}
+
+function renderPagination() {
+    var html = '<li class="page-item ' + (currentPage <= 1 ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="' + (currentPage-1) + '">«</a></li>';
+    for(var i = Math.max(1, currentPage-3); i <= Math.min(totalPages, currentPage+3); i++) {
+        html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '"><a class="page-link" href="#" data-page="' + i + '">' + i + '</a></li>';
+    }
+    html += '<li class="page-item ' + (currentPage >= totalPages ? 'disabled' : '') + '"><a class="page-link" href="#" data-page="' + (currentPage+1) + '">»</a></li>';
+    $('#pagination').html(html);
+    $('.page-link').click(function(e) { e.preventDefault(); if($(this).parent().hasClass('disabled')) return; currentPage = parseInt($(this).data('page')); loadProjects(); window.scrollTo({top:0,behavior:'smooth'}); });
+}
+
+function formatCurrency(amount) { return Number(amount).toLocaleString('en-IN'); }
+</script>
+{% endblock %}

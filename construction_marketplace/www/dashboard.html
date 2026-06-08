@@ -1,0 +1,192 @@
+<!-- Construction Marketplace - Customer Dashboard -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.dashboard-header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); padding: 40px 0; color: #fff; }
+.dashboard-sidebar { background: #fff; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); overflow: hidden; }
+.dashboard-sidebar .nav-link { border-radius: 0; padding: 12px 20px; color: #555; border-left: 3px solid transparent; transition: all 0.3s ease; }
+.dashboard-sidebar .nav-link:hover { background: #f8f9ff; color: #1a237e; }
+.dashboard-sidebar .nav-link.active { background: #f0f0ff; color: #1a237e; border-left-color: #1a237e; font-weight: 600; }
+.dashboard-sidebar .nav-link i { width: 22px; }
+.dashboard-content { background: #fff; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); padding: 25px; min-height: 400px; }
+.stat-card { background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; }
+.stat-card .stat-value { font-size: 2rem; font-weight: 800; color: #1a237e; }
+.stat-card .stat-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.order-table { font-size: 0.9rem; }
+.order-table th { background: #f8f9fa; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #333; }
+.order-table td { vertical-align: middle; }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="dashboard-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb bg-transparent p-0 mb-2"><li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li><li class="breadcrumb-item active text-white">Dashboard</li></ol></nav>
+        <h1 class="fw-bold mb-2">My Dashboard</h1>
+        <p class="mb-0 opacity-75" id="welcome-message">Welcome back!</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <!-- Login Required -->
+        <div id="login-required" class="text-center py-5 d-none">
+            <i class="fas fa-user-lock" style="font-size:3rem;color:#ddd;"></i>
+            <h4 class="mt-3">Please Login</h4>
+            <p class="text-muted">You need to login to view your dashboard.</p>
+            <a href="/login" class="btn btn-primary rounded-pill px-5"><i class="fas fa-sign-in-alt me-2"></i>Login</a>
+        </div>
+
+        <div id="dashboard-content">
+            <!-- Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-orders">0</div><div class="stat-label">Total Orders</div></div></div>
+                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-enquiries">0</div><div class="stat-label">Quotations</div></div></div>
+                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-cart-items">0</div><div class="stat-label">Cart Items</div></div></div>
+                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-wishlist">0</div><div class="stat-label">Wishlist</div></div></div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 mb-3 mb-lg-0">
+                    <div class="dashboard-sidebar">
+                        <div class="nav flex-column" role="tablist">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#my-orders" role="tab"><i class="fas fa-shopping-bag me-2"></i> My Orders</a>
+                            <a class="nav-link" data-bs-toggle="tab" href="#my-quotations" role="tab"><i class="fas fa-file-invoice me-2"></i> My Quotations</a>
+                            <a class="nav-link" data-bs-toggle="tab" href="#my-cart" role="tab"><i class="fas fa-shopping-cart me-2"></i> My Cart</a>
+                            <a class="nav-link" data-bs-toggle="tab" href="#my-profile" role="tab"><i class="fas fa-user me-2"></i> My Profile</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="dashboard-content tab-content">
+                        <!-- Orders Tab -->
+                        <div class="tab-pane fade show active" id="my-orders">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-shopping-bag me-2"></i>My Orders</h5>
+                            <div id="orders-list">
+                                <p class="text-muted text-center py-3">Loading orders...</p>
+                            </div>
+                        </div>
+                        <!-- Quotations Tab -->
+                        <div class="tab-pane fade" id="my-quotations">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2"></i>My Quotations</h5>
+                            <div id="quotations-list">
+                                <p class="text-muted text-center py-3">No quotations yet. <a href="/request-quote">Request a quote</a></p>
+                            </div>
+                        </div>
+                        <!-- Cart Tab -->
+                        <div class="tab-pane fade" id="my-cart">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-shopping-cart me-2"></i>My Cart</h5>
+                            <div id="cart-items-list">
+                                <p class="text-muted text-center py-3">Your cart is empty. <a href="/materials">Browse materials</a></p>
+                            </div>
+                        </div>
+                        <!-- Profile Tab -->
+                        <div class="tab-pane fade" id="my-profile">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-user me-2"></i>My Profile</h5>
+                            <div id="profile-content">
+                                <p class="text-muted text-center py-3">Loading profile...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    frappe.call({
+        method: "construction_marketplace.api.get_dashboard_stats",
+        callback: function(r) {
+            if(r.message && r.message.customer_name) {
+                $('#welcome-message').text('Welcome back, ' + r.message.customer_name + '!');
+                $('#stat-orders').text(r.message.orders_count || 0);
+                $('#stat-enquiries').text(r.message.enquiries_count || 0);
+                
+                // Load orders
+                loadOrders();
+                loadCart();
+                loadProfile();
+            } else {
+                $('#dashboard-content').addClass('d-none');
+                $('#login-required').removeClass('d-none');
+            }
+        }
+    });
+});
+
+function loadOrders() {
+    frappe.call({
+        method: "construction_marketplace.api.get_customer_orders",
+        args: { page: 1, page_size: 10 },
+        callback: function(r) {
+            if(r.message && r.message.orders && r.message.orders.length > 0) {
+                var html = '<div class="table-responsive"><table class="table order-table">';
+                html += '<thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+                r.message.orders.forEach(function(o) {
+                    var statusClass = {Draft:'bg-secondary',Confirmed:'bg-info',Processing:'bg-primary',Shipped:'bg-purple',Delivered:'bg-success',Cancelled:'bg-danger'};
+                    var cls = statusClass[o.status] || 'bg-secondary';
+                    html += '<tr><td><a href="/app/marketplace-order/' + o.name + '">' + o.name + '</a></td>';
+                    html += '<td>' + o.order_date + '</td>';
+                    html += '<td>' + (o.item_count || 0) + '</td>';
+                    html += '<td>₹ ' + formatCurrency(o.total_amount || 0) + '</td>';
+                    html += '<td><span class="badge ' + cls + ' status-badge">' + o.status + '</span></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                $('#orders-list').html(html);
+            } else {
+                $('#orders-list').html('<div class="text-center py-4"><i class="fas fa-shopping-bag" style="font-size:3rem;color:#ddd;"></i><p class="mt-2 text-muted">No orders yet. <a href="/materials">Start shopping</a></p></div>');
+            }
+        }
+    });
+}
+
+function loadCart() {
+    frappe.call({
+        method: "construction_marketplace.api.get_cart",
+        callback: function(r) {
+            if(r.message && r.message.items && r.message.items.length > 0) {
+                var items = r.message.items;
+                var html = '<div class="table-responsive"><table class="table order-table"><thead><tr><th>Item</th><th>Supplier</th><th>Qty</th><th>Rate</th><th>Amount</th><th>Action</th></tr></thead><tbody>';
+                items.forEach(function(item) {
+                    html += '<tr><td>' + item.material_name + '</td><td>' + (item.supplier || '') + '</td>';
+                    html += '<td>' + item.quantity + '</td><td>₹ ' + formatCurrency(item.rate || 0) + '</td>';
+                    html += '<td>₹ ' + formatCurrency(item.amount || 0) + '</td>';
+                    html += '<td><button class="btn btn-sm btn-outline-danger remove-cart-btn" data-material="' + item.material_id + '" data-price="' + item.price_id + '"><i class="fas fa-trash"></i></button></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                html += '<div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold">Total: ₹ ' + formatCurrency(r.message.total || 0) + '</h5>';
+                html += '<a href="/request-quote" class="btn btn-primary rounded-pill"><i class="fas fa-file-invoice me-2"></i>Request Quote</a></div>';
+                $('#cart-items-list').html(html);
+            }
+        }
+    });
+}
+
+function loadProfile() {
+    frappe.call({
+        method: "construction_marketplace.api.get_customer_profile",
+        callback: function(r) {
+            if(r.message) {
+                var p = r.message;
+                var html = '<div class="row"><div class="col-md-6"><p><strong>Name:</strong> ' + (p.customer_name || 'N/A') + '</p>';
+                html += '<p><strong>Company:</strong> ' + (p.company_name || 'N/A') + '</p>';
+                html += '<p><strong>Email:</strong> ' + (p.email || 'N/A') + '</p>';
+                html += '<p><strong>Phone:</strong> ' + (p.phone || p.mobile || 'N/A') + '</p></div>';
+                html += '<div class="col-md-6"><p><strong>City:</strong> ' + (p.city || 'N/A') + '</p>';
+                html += '<p><strong>State:</strong> ' + (p.state || 'N/A') + '</p>';
+                html += '<p><strong>Type:</strong> ' + (p.customer_type || 'N/A') + '</p></div></div>';
+                $('#profile-content').html(html);
+            }
+        }
+    });
+}
+
+function formatCurrency(amount) { return Number(amount).toLocaleString('en-IN'); }
+</script>
+{% endblock %}
