@@ -44,16 +44,19 @@
         <div id="dashboard-content">
             <!-- Stats -->
             <div class="row g-3 mb-4">
-                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-orders">0</div><div class="stat-label">Total Orders</div></div></div>
-                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-enquiries">0</div><div class="stat-label">Quotations</div></div></div>
-                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-cart-items">0</div><div class="stat-label">Cart Items</div></div></div>
-                <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-value" id="stat-wishlist">0</div><div class="stat-label">Wishlist</div></div></div>
+                <div class="col-md-4 col-6"><div class="stat-card"><div class="stat-value" id="stat-orders">0</div><div class="stat-label">Total Orders</div></div></div>
+                <div class="col-md-4 col-6"><div class="stat-card"><div class="stat-value" id="stat-enquiries">0</div><div class="stat-label">Quotations</div></div></div>
+                <div class="col-md-4 col-6"><div class="stat-card"><div class="stat-value" id="stat-cart-items">0</div><div class="stat-label">Cart Items</div></div></div>
             </div>
 
             <div class="row">
                 <div class="col-lg-3 mb-3 mb-lg-0">
                     <div class="dashboard-sidebar">
-                        <div class="nav flex-column" role="tablist">
+                        <!-- Mobile sidebar toggle -->
+                        <button class="btn btn-outline-primary w-100 d-lg-none mb-2" id="sidebar-toggle" onclick="$('.dashboard-sidebar .nav').slideToggle();">
+                            <i class="fas fa-bars me-2"></i>Dashboard Menu
+                        </button>
+                        <div class="nav flex-column d-none d-lg-flex" role="tablist" id="sidebar-nav">
                             <a class="nav-link active" data-bs-toggle="tab" href="#my-orders" role="tab"><i class="fas fa-shopping-bag me-2"></i> My Orders</a>
                             <a class="nav-link" data-bs-toggle="tab" href="#my-quotations" role="tab"><i class="fas fa-file-invoice me-2"></i> My Quotations</a>
                             <a class="nav-link" data-bs-toggle="tab" href="#my-cart" role="tab"><i class="fas fa-shopping-cart me-2"></i> My Cart</a>
@@ -74,7 +77,7 @@
                         <div class="tab-pane fade" id="my-quotations">
                             <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2"></i>My Quotations</h5>
                             <div id="quotations-list">
-                                <p class="text-muted text-center py-3">No quotations yet. <a href="/request-quote">Request a quote</a></p>
+                                <p class="text-muted text-center py-3">Loading quotations...</p>
                             </div>
                         </div>
                         <!-- Cart Tab -->
@@ -102,25 +105,54 @@
 {% block script %}
 <script>
 $(document).ready(function() {
+    // Load everything on page load
+    loadDashboard();
+    
+    // Re-bind cart updated events
+    $(document).on('cart-updated', function() {
+        loadCart();
+        loadDashboard();
+    });
+    
+    // Mobile sidebar toggle
+    $('#sidebar-toggle').on('click', function() {
+        $('#sidebar-nav').slideToggle(200);
+    });
+    
+    // Tab click on mobile — auto-collapse sidebar
+    $('#sidebar-nav a').on('click', function() {
+        if ($(window).width() < 992) {
+            $('#sidebar-nav').slideUp(200);
+        }
+    });
+});
+
+function loadDashboard() {
     frappe.call({
         method: "construction_marketplace.api.get_dashboard_stats",
         callback: function(r) {
-            if(r.message && r.message.customer_name) {
+            if(r.message && r.message.customer_name != null) {
                 $('#welcome-message').text('Welcome back, ' + r.message.customer_name + '!');
                 $('#stat-orders').text(r.message.orders_count || 0);
                 $('#stat-enquiries').text(r.message.enquiries_count || 0);
                 
-                // Load orders
                 loadOrders();
+                loadQuotations();
                 loadCart();
                 loadProfile();
             } else {
                 $('#dashboard-content').addClass('d-none');
                 $('#login-required').removeClass('d-none');
             }
+        },
+        error: function() {
+            $('#dashboard-content').addClass('d-none');
+            $('#login-required').removeClass('d-none');
         }
     });
-});
+}
+
+// ==================== ORDERS ====================
 
 function loadOrders() {
     frappe.call({
@@ -129,14 +161,17 @@ function loadOrders() {
         callback: function(r) {
             if(r.message && r.message.orders && r.message.orders.length > 0) {
                 var html = '<div class="table-responsive"><table class="table order-table">';
-                html += '<thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+                html += '<thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead><tbody>';
                 r.message.orders.forEach(function(o) {
                     var statusClass = {Draft:'bg-secondary',Confirmed:'bg-info',Processing:'bg-primary',Shipped:'bg-purple',Delivered:'bg-success',Cancelled:'bg-danger'};
                     var cls = statusClass[o.status] || 'bg-secondary';
-                    html += '<tr><td><a href="/app/marketplace-order/' + o.name + '">' + o.name + '</a></td>';
+                    var payClass = {Pending:'bg-warning',Partial:'bg-info',Completed:'bg-success',Refund:'bg-danger'};
+                    var payCls = payClass[o.payment_status] || 'bg-secondary';
+                    html += '<tr><td><strong>' + o.name + '</strong></td>';
                     html += '<td>' + o.order_date + '</td>';
                     html += '<td>' + (o.item_count || 0) + '</td>';
                     html += '<td>₹ ' + formatCurrency(o.total_amount || 0) + '</td>';
+                    html += '<td><span class="badge ' + payCls + ' status-badge" style="font-size:0.7rem;">' + (o.payment_status || 'N/A') + '</span><br><small class="text-muted">' + (o.payment_method || '') + '</small></td>';
                     html += '<td><span class="badge ' + cls + ' status-badge">' + o.status + '</span></td></tr>';
                 });
                 html += '</tbody></table></div>';
@@ -144,9 +179,45 @@ function loadOrders() {
             } else {
                 $('#orders-list').html('<div class="text-center py-4"><i class="fas fa-shopping-bag" style="font-size:3rem;color:#ddd;"></i><p class="mt-2 text-muted">No orders yet. <a href="/materials">Start shopping</a></p></div>');
             }
+        },
+        error: function() {
+            $('#orders-list').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Failed to load orders. Please try again.</p></div>');
         }
     });
 }
+
+// ==================== QUOTATIONS ====================
+
+function loadQuotations() {
+    frappe.call({
+        method: "construction_marketplace.api.get_customer_enquiries",
+        args: { page: 1, page_size: 10 },
+        callback: function(r) {
+            if(r.message && r.message.enquiries && r.message.enquiries.length > 0) {
+                var html = '<div class="table-responsive"><table class="table order-table">';
+                html += '<thead><tr><th>Enquiry ID</th><th>Date</th><th>Material</th><th>Qty</th><th>Status</th></tr></thead><tbody>';
+                r.message.enquiries.forEach(function(e) {
+                    var statusClass = {Open:'bg-primary',Closed:'bg-secondary',Replied:'bg-info'}; 
+                    var cls = statusClass[e.status] || 'bg-secondary';
+                    html += '<tr><td>' + e.name + '</td>';
+                    html += '<td>' + e.enquiry_date + '</td>';
+                    html += '<td>' + (e.material || '—') + '</td>';
+                    html += '<td>' + (e.quantity || 0) + '</td>';
+                    html += '<td><span class="badge ' + cls + ' status-badge">' + e.status + '</span></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                $('#quotations-list').html(html);
+            } else {
+                $('#quotations-list').html('<div class="text-center py-4"><i class="fas fa-file-invoice" style="font-size:3rem;color:#ddd;"></i><p class="mt-2 text-muted">No quotations yet. <a href="/request-quote">Request a quote</a></p></div>');
+            }
+        },
+        error: function() {
+            $('#quotations-list').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Failed to load quotations.</p></div>');
+        }
+    });
+}
+
+// ==================== CART ====================
 
 function loadCart() {
     frappe.call({
@@ -154,6 +225,7 @@ function loadCart() {
         callback: function(r) {
             if(r.message && r.message.items && r.message.items.length > 0) {
                 var items = r.message.items;
+                $('#stat-cart-items').text(items.length);
                 var html = '<div class="table-responsive"><table class="table order-table"><thead><tr><th>Item</th><th>Supplier</th><th>Qty</th><th>Rate</th><th>Amount</th><th>Action</th></tr></thead><tbody>';
                 items.forEach(function(item) {
                     html += '<tr><td>' + item.material_name + '</td><td>' + (item.supplier || '') + '</td>';
@@ -162,13 +234,21 @@ function loadCart() {
                     html += '<td><button class="btn btn-sm btn-outline-danger remove-cart-btn" data-material="' + item.material_id + '" data-price="' + item.price_id + '"><i class="fas fa-trash"></i></button></td></tr>';
                 });
                 html += '</tbody></table></div>';
-                html += '<div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold">Total: ₹ ' + formatCurrency(r.message.total || 0) + '</h5>';
-                html += '<a href="/checkout" class="btn btn-accent btn-lg rounded-pill px-5 checkout-cta-btn"><i class="fas fa-credit-card me-2"></i> Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i></a></div>';
+                html += '<div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2"><h5 class="fw-bold mb-0">Total: ₹ ' + formatCurrency(r.message.total || 0) + '</h5>';
+                html += '<a href="/checkout" class="btn btn-accent btn-lg rounded-pill px-4 checkout-cta-btn"><i class="fas fa-credit-card me-2"></i> Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i></a></div>';
                 $('#cart-items-list').html(html);
+            } else {
+                $('#stat-cart-items').text(0);
+                $('#cart-items-list').html('<div class="text-center py-4"><i class="fas fa-shopping-cart" style="font-size:3rem;color:#ddd;"></i><p class="mt-2 text-muted">Your cart is empty. <a href="/materials">Browse materials</a></p></div>');
             }
+        },
+        error: function() {
+            $('#cart-items-list').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Failed to load cart.</p></div>');
         }
     });
 }
+
+// ==================== PROFILE ====================
 
 function loadProfile() {
     frappe.call({
@@ -176,15 +256,26 @@ function loadProfile() {
         callback: function(r) {
             if(r.message) {
                 var p = r.message;
-                var html = '<div class="row"><div class="col-md-6"><p><strong>Name:</strong> ' + (p.customer_name || 'N/A') + '</p>';
-                html += '<p><strong>Company:</strong> ' + (p.company_name || 'N/A') + '</p>';
-                html += '<p><strong>Email:</strong> ' + (p.email || 'N/A') + '</p>';
-                html += '<p><strong>Phone:</strong> ' + (p.phone || p.mobile || 'N/A') + '</p></div>';
-                html += '<div class="col-md-6"><p><strong>City:</strong> ' + (p.city || 'N/A') + '</p>';
-                html += '<p><strong>State:</strong> ' + (p.state || 'N/A') + '</p>';
-                html += '<p><strong>Type:</strong> ' + (p.customer_type || 'N/A') + '</p></div></div>';
+                var html = '<div class="row">';
+                html += '<div class="col-md-6">';
+                html += '<p><strong><i class="fas fa-user text-primary me-1"></i> Name:</strong> ' + (p.customer_name || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-building text-primary me-1"></i> Company:</strong> ' + (p.company_name || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-envelope text-primary me-1"></i> Email:</strong> ' + (p.email || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-phone text-primary me-1"></i> Phone:</strong> ' + (p.phone || p.mobile || 'N/A') + '</p>';
+                html += '</div>';
+                html += '<div class="col-md-6">';
+                html += '<p><strong><i class="fas fa-map-marker-alt text-primary me-1"></i> Address:</strong> ' + (p.address || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-city text-primary me-1"></i> City:</strong> ' + (p.city || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-flag text-primary me-1"></i> State:</strong> ' + (p.state || 'N/A') + '</p>';
+                html += '<p><strong><i class="fas fa-tag text-primary me-1"></i> Type:</strong> ' + (p.customer_type || 'N/A') + '</p>';
+                html += '</div></div>';
                 $('#profile-content').html(html);
+            } else {
+                $('#profile-content').html('<p class="text-muted text-center py-3">Profile not found. <a href="/request-quote">Create a profile</a></p>');
             }
+        },
+        error: function() {
+            $('#profile-content').html('<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Failed to load profile.</p></div>');
         }
     });
 }

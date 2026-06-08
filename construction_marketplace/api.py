@@ -498,9 +498,11 @@ def get_customer_orders(page=1, page_size=10):
             mo.order_date,
             mo.status,
             mo.payment_status,
+            mo.payment_method,
             mo.total_amount,
             mo.net_amount,
             mo.delivery_city,
+            mo.delivery_contact,
             (SELECT COUNT(*) FROM `tabOrder Item` oi WHERE oi.parent = mo.name) as item_count
         FROM
             `tabMarketplace Order` mo
@@ -512,6 +514,43 @@ def get_customer_orders(page=1, page_size=10):
     """, (customer, page_size, offset), as_dict=True)
     
     return {"orders": orders, "total": total, "page": page, "page_size": page_size}
+
+
+@frappe.whitelist()
+def get_customer_enquiries(page=1, page_size=10):
+    """Get quotations (enquiries) for the current customer"""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please login first"), frappe.PermissionError)
+    
+    customer = frappe.db.get_value("Marketplace Customer", {"email": user}, "name")
+    if not customer:
+        return {"enquiries": [], "total": 0}
+    
+    page = int(page)
+    page_size = int(page_size)
+    offset = (page - 1) * page_size
+    
+    total = frappe.db.count("Customer Enquiry", {"customer": customer})
+    
+    enquiries = frappe.db.sql("""
+        SELECT
+            ce.name,
+            ce.enquiry_date,
+            ce.status,
+            ce.material,
+            ce.quantity,
+            ce.description
+        FROM
+            `tabCustomer Enquiry` ce
+        WHERE
+            ce.customer = %s AND ce.docstatus < 2
+        ORDER BY
+            ce.creation DESC
+        LIMIT %s OFFSET %s
+    """, (customer, page_size, offset), as_dict=True)
+    
+    return {"enquiries": enquiries, "total": total, "page": page, "page_size": page_size}
 
 
 # ==================== QUOTE/ENQUIRY APIS ====================
