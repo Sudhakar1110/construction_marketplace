@@ -1,15 +1,6 @@
 {
  "category": "Modules",
- "charts": [
-  {
-   "chart_name": "Orders Overview",
-   "label": "Orders Overview"
-  },
-  {
-   "chart_name": "Popular Materials",
-   "label": "Popular Materials"
-  }
- ],
+ "charts": [],
  "creation": "2024-01-01 00:00:00",
  "developer_mode_only": 0,
  "disable_user_customization": 0,
@@ -88,6 +79,17 @@
    "link_to": "Marketplace Order",
    "link_type": "DocType",
    "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "description": "Payment settings (UPI ID, bank details)",
+   "hidden": 0,
+   "icon": "credit-card",
+   "is_query_report": 0,
+   "label": "Marketplace Settings",
+   "link_to": "Marketplace Settings",
+   "link_type": "DocType",
+   "onboard": 0,
    "type": "Link"
   },
   {
