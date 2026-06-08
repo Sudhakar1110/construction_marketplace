@@ -44,9 +44,83 @@
 .payment-option .payment-card .payment-label { font-weight: 700; font-size: 0.85rem; color: #333; }
 .payment-option .payment-card .payment-desc { font-size: 0.75rem; color: #888; margin-top: 2px; }
 .payment-option input[type="radio"]:checked + .payment-card .payment-icon { color: #1a237e; }
-.upi-details { display: none; background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 10px; text-align: center; }
-.upi-details.show { display: block; }
-.upi-details .upi-id { font-size: 1.1rem; font-weight: 700; color: #1a237e; background: #fff; padding: 8px 15px; border-radius: 8px; border: 1px dashed #1a237e; display: inline-block; }
+
+/* Payment Section Layouts */
+.payment-action-area { margin-top: 15px; }
+.payment-section { display: none; background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e0e0e0; }
+.payment-section.active { display: block; }
+
+/* QR Code Styles */
+.qr-code-wrapper { background: #fff; border-radius: 12px; padding: 20px; display: inline-block; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 10px; }
+.qr-code-wrapper img { width: 220px; height: 220px; image-rendering: pixelated; }
+.upi-id-display { font-size: 1.1rem; font-weight: 700; color: #1a237e; background: #fff; padding: 8px 20px; border-radius: 8px; border: 1px dashed #1a237e; display: inline-block; margin: 8px 0; }
+
+/* Card Preview */
+.card-preview { perspective: 1000px; margin-bottom: 15px; }
+.card-visual {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+    border-radius: 16px;
+    padding: 25px;
+    color: #fff;
+    min-height: 180px;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(26,35,126,0.3);
+    text-align: left;
+}
+.card-visual .card-chip { font-size: 2rem; margin-bottom: 20px; color: rgba(255,255,255,0.6); }
+.card-visual .card-number-display { font-size: 1.4rem; letter-spacing: 2px; font-family: 'Courier New', monospace; margin-bottom: 20px; word-spacing: 8px; }
+.card-visual .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+.card-visual .card-bottom small { font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px; }
+.card-visual .card-bottom .value { font-size: 0.95rem; font-weight: 600; }
+.card-visual .card-type { position: absolute; bottom: 25px; right: 25px; font-size: 2.2rem; opacity: 0.4; }
+
+/* Card Input Fields */
+.card-input {
+    font-size: 1rem;
+    letter-spacing: 1px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+.card-input:focus {
+    border-color: #1a237e;
+    box-shadow: 0 0 0 0.2rem rgba(26,35,126,0.1);
+}
+
+/* Pay / Verify Buttons */
+.verify-payment-btn, .pay-now-btn {
+    padding: 14px 30px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 50px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+.verify-payment-btn { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+.verify-payment-btn:hover { background: #1b5e20; border-color: #1b5e20; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(46,125,50,0.3); color: #fff; }
+.pay-now-btn { background: #1a237e; border-color: #1a237e; color: #fff; }
+.pay-now-btn:hover { background: #0d1652; border-color: #0d1652; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,35,126,0.3); color: #fff; }
+.verify-payment-btn:disabled, .pay-now-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+
+/* Payment Status Messages */
+.payment-status { margin-top: 12px; font-weight: 600; font-size: 0.9rem; }
+.payment-status.success { color: #2e7d32; }
+.payment-status.error { color: #c62828; }
+.payment-status.pending { color: #e65100; }
+
+/* Processing Overlay */
+.payment-processing { position: relative; min-height: 140px; }
+.payment-processing .processing-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10;
+}
+.payment-processing .processing-overlay .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #1a237e; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.payment-processing .processing-overlay p { margin-top: 10px; font-weight: 600; color: #1a237e; }
 </style>
 {% endblock %}
 
@@ -210,17 +284,91 @@
                                         </label>
                                     </div>
                                 </div>
-                                <!-- UPI Details (shown when UPI is selected) -->
-                                <div class="upi-details" id="upi-details">
-                                    <p class="mb-2 small text-muted">Make payment to the following UPI ID:</p>
-                                    <div class="upi-id">marketplace@upi</div>
-                                    <p class="small text-muted mt-2 mb-0"><i class="fas fa-info-circle me-1"></i>After payment, your order will be processed once confirmed.</p>
+                                <!-- Payment Action Area -->
+                                <div class="payment-action-area" id="payment-action-area" style="display:none;">
+                                    <!-- UPI Payment Section -->
+                                    <div class="payment-section active" id="upi-payment-section">
+                                        <div class="qr-code-wrapper">
+                                            <img id="qr-code-image" src="" alt="QR Code">
+                                        </div>
+                                        <p class="mb-1 small text-muted">Scan with GPay, PhonePe, Paytm or any UPI app</p>
+                                        <div class="upi-id-display" id="upi-id-display">marketplace@upi</div>
+                                        <p class="small text-muted mt-2 mb-1" id="upi-amount-display">Amount: ₹ 0</p>
+                                        <button type="button" class="verify-payment-btn" id="verify-upi-btn">
+                                            <i class="fas fa-check-circle me-2"></i>I've Paid - Verify Payment
+                                        </button>
+                                        <div class="payment-status" id="upi-payment-status"></div>
+                                    </div>
+
+                                    <!-- Card Payment Section -->
+                                    <div class="payment-section" id="card-payment-section">
+                                        <div class="card-preview">
+                                            <div class="card-visual">
+                                                <div class="card-chip"><i class="fas fa-microchip"></i></div>
+                                                <div class="card-number-display" id="card-number-display">•••• •••• •••• ••••</div>
+                                                <div class="card-bottom">
+                                                    <div><small>CARD HOLDER</small><div class="value" id="card-name-display">YOUR NAME</div></div>
+                                                    <div><small>EXPIRES</small><div class="value" id="card-expiry-display">MM/YY</div></div>
+                                                </div>
+                                                <div class="card-type" id="card-type-display"><i class="fas fa-credit-card"></i></div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 text-start">
+                                            <div class="mb-3">
+                                                <label class="form-label">Card Number *</label>
+                                                <input type="text" class="form-control card-input" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Cardholder Name *</label>
+                                                <input type="text" class="form-control card-input" id="card-name" placeholder="Name on card">
+                                            </div>
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label">Expiry Date *</label>
+                                                    <input type="text" class="form-control card-input" id="card-expiry" placeholder="MM/YY" maxlength="5">
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label">CVV *</label>
+                                                    <input type="password" class="form-control card-input" id="card-cvv" placeholder="•••" maxlength="4">
+                                                </div>
+                                            </div>
+                                            <button type="button" class="pay-now-btn" id="pay-card-btn">
+                                                <i class="fas fa-lock me-2"></i>Pay Now <span id="card-pay-amount"></span>
+                                            </button>
+                                            <div class="payment-status" id="card-payment-status"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bank Transfer Section -->
+                                    <div class="payment-section" id="bank-payment-section">
+                                        <p class="text-muted">Transfer the amount to the following account:</p>
+                                        <div class="bg-white p-3 rounded-3 border d-inline-block text-start mb-2">
+                                            <p class="mb-1"><strong>Account:</strong> Construction Marketplace</p>
+                                            <p class="mb-1"><strong>Bank:</strong> State Bank of India</p>
+                                            <p class="mb-1"><strong>Account No:</strong> XXXX XXXX XXXX 1234</p>
+                                            <p class="mb-0"><strong>IFSC:</strong> SBIN0012345</p>
+                                        </div>
+                                        <button type="button" class="verify-payment-btn" id="place-bank-btn">
+                                            <i class="fas fa-check-circle me-2"></i>I've Transferred - Place Order
+                                        </button>
+                                        <div class="payment-status" id="bank-payment-status"></div>
+                                    </div>
+
+                                    <!-- Shared Processing Overlay -->
+                                    <div id="payment-processing" style="display:none;" class="payment-processing">
+                                        <div class="processing-overlay">
+                                            <div class="spinner"></div>
+                                            <p id="processing-text">Processing payment...</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="place-order-btn" id="place-order-btn">
-                                <i class="fas fa-check-circle me-2"></i>Place Order
-                            </button>
+                            <div id="main-action-container">
+                                <button type="submit" class="place-order-btn" id="place-order-btn">
+                                    <i class="fas fa-check-circle me-2"></i>Place Order
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -252,32 +400,80 @@
 
 {% block script %}
 <script>
+// -------------------- CART TOTAL (stored globally for payment screens) --------------------
+var checkoutCartTotal = 0;
+var checkoutFormData = {};
+
 $(document).ready(function() {
-    // Toggle UPI details when payment method changes
+    loadCheckoutPage();
+
+    // Payment method change → toggle visible sections
     $('input[name="payment_method"]').change(function() {
-        if ($(this).val() === 'UPI') {
-            $('#upi-details').addClass('show');
-        } else {
-            $('#upi-details').removeClass('show');
-        }
+        // Reset payment action area when switching methods
+        $('#payment-action-area').hide();
+        $('#main-action-container').show();
     });
 
-    loadCheckoutPage();
+    // Card input live preview updates
+    $('#card-number').on('input', function() {
+        var val = $(this).val().replace(/\D/g, '').substring(0, 16);
+        var formatted = val.match(/.{1,4}/g);
+        $(this).val(formatted ? formatted.join(' ') : '');
+        var display = val || '••••••••••••••••';
+        $('#card-number-display').text(display.replace(/(.{4})/g, '$1 '));
+        // Detect card type
+        if (val.startsWith('4')) $('#card-type-display').html('<i class="fab fa-cc-visa"></i>');
+        else if (val.startsWith('5')) $('#card-type-display').html('<i class="fab fa-cc-mastercard"></i>');
+        else if (val.startsWith('3')) $('#card-type-display').html('<i class="fab fa-cc-amex"></i>');
+        else $('#card-type-display').html('<i class="fas fa-credit-card"></i>');
+    });
+    $('#card-name').on('input', function() {
+        var val = $(this).val().toUpperCase() || 'YOUR NAME';
+        $('#card-name-display').text(val);
+    });
+    $('#card-expiry').on('input', function() {
+        var val = $(this).val().replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 2) {
+            $(this).val(val.substring(0, 2) + '/' + val.substring(2));
+        }
+        var display = $(this).val() || 'MM/YY';
+        $('#card-expiry-display').text(display);
+    });
+    $('#card-cvv').on('input', function() {
+        $(this).val($(this).val().replace(/\D/g, '').substring(0, 4));
+    });
+
+    // Verify UPI Payment button
+    $('#verify-upi-btn').on('click', function() {
+        processUPIPayment();
+    });
+
+    // Card Pay Now button
+    $('#pay-card-btn').on('click', function() {
+        processCardPayment();
+    });
+
+    // Bank Transfer - I've Transferred button
+    $('#place-bank-btn').on('click', function() {
+        placeOrderAfterPayment('Bank Transfer', false);
+    });
 });
+
+// ==================== PAGE LOAD ====================
 
 function loadCheckoutPage() {
     frappe.call({
         method: "construction_marketplace.api.get_cart",
         callback: function(r) {
             if (r.message && r.message.items && r.message.items.length > 0) {
-                renderOrderSummary(r.message.items, r.message.total);
+                checkoutCartTotal = r.message.total || 0;
+                renderOrderSummary(r.message.items, checkoutCartTotal);
                 $('#empty-cart, #login-required').addClass('d-none');
                 $('#checkout-content').removeClass('d-none');
             } else if (r.message && r.message.items && r.message.items.length === 0) {
                 $('#checkout-content').addClass('d-none');
                 $('#empty-cart').removeClass('d-none');
             } else {
-                // Not logged in
                 $('#checkout-content').addClass('d-none');
                 $('#login-required').removeClass('d-none');
             }
@@ -303,70 +499,286 @@ function renderOrderSummary(items, total) {
     $('#order-total-section').removeClass('d-none');
 }
 
+// ==================== MAIN PLACE ORDER ENTRY ====================
+
 function placeOrder(e) {
     e.preventDefault();
-    var btn = $('#place-order-btn');
-    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Placing Order...');
 
-    var address = $('#delivery-address').val() || '';
-    var state = $('#delivery-state').val() || '';
-    var pincode = $('#delivery-pincode').val() || '';
+    // Collect form data
+    var name = $('#delivery-contact').val().trim();
+    var phone = $('#delivery-phone').val().trim();
+    var email = $('#delivery-email').val().trim();
+    var address = $('#delivery-address').val().trim();
+    var city = $('#delivery-city').val().trim();
+    var state = $('#delivery-state').val().trim();
+    var pincode = $('#delivery-pincode').val().trim();
+    var notes = $('#order-notes').val().trim();
+
+    // Build full address
     if (state || pincode) {
         address += (address ? ', ' : '') + (state || '') + (pincode ? ' - ' + pincode : '');
     }
-    var notes = $('#order-notes').val() || '';
-    var name = $('#delivery-contact').val();
-    var phone = $('#delivery-phone').val();
 
     var paymentMethod = $('input[name="payment_method"]:checked').val() || 'Cash';
 
-    var formData = {
+    checkoutFormData = {
         delivery_address: address,
-        delivery_city: $('#delivery-city').val(),
+        delivery_city: city,
         delivery_contact: name,
         delivery_phone: phone,
+        delivery_email: email,
         notes: notes,
         payment_method: paymentMethod
     };
 
-    frappe.call({
-        method: "construction_marketplace.api.place_order",
-        args: formData,
-        callback: function(r) {
-            if (r.message && r.message.success) {
-                var paymentMsg = '';
-                if (paymentMethod === 'Cash') {
-                    paymentMsg = 'You will pay when the materials are delivered. No advance payment needed.';
-                } else if (paymentMethod === 'UPI') {
-                    paymentMsg = 'Please make the payment to marketplace@upi via GPay, PhonePe, or PayTM. Share the transaction ID with our team.';
-                } else if (paymentMethod === 'Card' || paymentMethod === 'Bank Transfer') {
-                    paymentMsg = 'Our team will contact you with payment details. Your order is confirmed.';
-                }
-                // Show success with payment instructions
-                $('#checkout-form').html(
-                    '<div class="text-center py-5">' +
-                    '<i class="fas fa-check-circle" style="font-size:4rem;color:#4CAF50;"></i>' +
-                    '<h3 class="mt-3 fw-bold" style="color:#1a237e;">Order Placed Successfully!</h3>' +
-                    '<p class="text-muted">' + (r.message.message || 'Your order has been placed.') + '</p>' +
-                    '<p><strong>Order ID:</strong> ' + r.message.order_id + '</p>' +
-                    '<div class="alert alert-info mt-3"><i class="fas fa-info-circle me-2"></i>' + paymentMsg + '</div>' +
-                    '<div class="d-flex justify-content-center gap-3 mt-4">' +
-                    '<a href="/dashboard" class="btn btn-primary rounded-pill px-5"><i class="fas fa-user me-2"></i>My Dashboard</a>' +
-                    '<a href="/materials" class="btn btn-outline-primary rounded-pill px-5"><i class="fas fa-store me-2"></i>Continue Shopping</a>' +
-                    '</div></div>'
-                );
-                $('#order-total-section').addClass('d-none');
-                $('.cart-badge').remove();
-            }
-        },
-        error: function(err) {
-            btn.prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Place Order');
-            alert('Error placing order. Please try again.');
-        }
-    });
+    // Transition to payment stage based on method
+    if (paymentMethod === 'Cash') {
+        // COD: Place order directly
+        placeOrderAfterPayment('Cash', false);
+    } else if (paymentMethod === 'UPI') {
+        showUPIScreen();
+    } else if (paymentMethod === 'Card') {
+        showCardScreen();
+    } else if (paymentMethod === 'Bank Transfer') {
+        showBankScreen();
+    } else {
+        placeOrderAfterPayment(paymentMethod, false);
+    }
 
     return false;
 }
+
+// ==================== PAYMENT SCREEN TRANSITIONS ====================
+
+function showUPIScreen() {
+    var total = checkoutCartTotal;
+    var upiId = 'marketplace@upi';
+    var merchantName = 'Construction%20Marketplace';
+    var upiLink = 'upi://pay?pa=' + upiId + '&pn=' + merchantName + '&am=' + total + '&cu=INR&tn=Order';
+    var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(upiLink);
+
+    $('#qr-code-image').attr('src', qrUrl);
+    $('#upi-id-display').text(upiId);
+    $('#upi-amount-display').text('Amount: ₹ ' + formatCurrency(total));
+    $('#upi-payment-status').removeClass().text('Scan the QR code and pay using any UPI app. Then click "Verify Payment".').addClass('payment-status pending');
+    $('#verify-upi-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Paid - Verify Payment');
+
+    // Show the payment action area, hide the main action button
+    $('#payment-action-area').show();
+    $('#upi-payment-section').show().siblings('.payment-section').hide();
+    $('#main-action-container').hide();
+}
+
+function showCardScreen() {
+    $('#card-pay-amount').text('- ₹ ' + formatCurrency(checkoutCartTotal));
+    $('#card-payment-status').removeClass().text('Enter your card details and click "Pay Now".').addClass('payment-status pending');
+    $('#pay-card-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i>Pay Now - ₹ ' + formatCurrency(checkoutCartTotal));
+
+    // Reset card preview
+    $('#card-number-display').text('•••• •••• •••• ••••');
+    $('#card-name-display').text('YOUR NAME');
+    $('#card-expiry-display').text('MM/YY');
+    $('#card-type-display').html('<i class="fas fa-credit-card"></i>');
+
+    $('#payment-action-area').show();
+    $('#card-payment-section').show().siblings('.payment-section').hide();
+    $('#main-action-container').hide();
+}
+
+function showBankScreen() {
+    $('#bank-payment-status').removeClass().text('Transfer the amount to the account shown above, then click confirm.').addClass('payment-status pending');
+    $('#place-bank-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Transferred - Place Order');
+
+    $('#payment-action-area').show();
+    $('#bank-payment-section').show().siblings('.payment-section').hide();
+    $('#main-action-container').hide();
+}
+
+// ==================== UPI PAYMENT FLOW ====================
+
+function processUPIPayment() {
+    $('#verify-upi-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Verifying Payment...');
+    $('#upi-payment-status').removeClass().text('Verifying your payment. Please wait...').addClass('payment-status pending');
+
+    // Show processing overlay
+    $('#payment-processing').show();
+    $('#processing-text').text('Verifying UPI payment...');
+
+    // Call verify_payment API (simulated verification)
+    frappe.call({
+        method: "construction_marketplace.api.verify_payment",
+        args: {
+            payment_method: 'UPI',
+            order_amount: checkoutCartTotal
+        },
+        callback: function(r) {
+            $('#payment-processing').hide();
+            if (r.message && r.message.verified) {
+                $('#upi-payment-status').removeClass().text('Payment verified! Transaction ID: ' + r.message.transaction_id).addClass('payment-status success');
+                // Now place the order
+                placeOrderAfterPayment('UPI', true, r.message.transaction_id);
+            } else {
+                $('#upi-payment-status').removeClass().text('Payment verification failed. Please try again.').addClass('payment-status error');
+                $('#verify-upi-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Paid - Verify Payment');
+            }
+        },
+        error: function() {
+            $('#payment-processing').hide();
+            $('#upi-payment-status').removeClass().text('Error connecting to payment gateway. Please try again.').addClass('payment-status error');
+            $('#verify-upi-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Paid - Verify Payment');
+        }
+    });
+}
+
+// ==================== CARD PAYMENT FLOW ====================
+
+function processCardPayment() {
+    // Validate card fields
+    var cardNum = $('#card-number').val().replace(/\s/g, '');
+    var cardName = $('#card-name').val().trim();
+    var cardExpiry = $('#card-expiry').val().trim();
+    var cardCvv = $('#card-cvv').val().trim();
+
+    if (cardNum.length < 13 || cardNum.length > 16) {
+        $('#card-payment-status').removeClass().text('Please enter a valid card number (13-16 digits).').addClass('payment-status error');
+        return;
+    }
+    if (!cardName) {
+        $('#card-payment-status').removeClass().text('Please enter the cardholder name.').addClass('payment-status error');
+        return;
+    }
+    if (cardExpiry.length < 5) {
+        $('#card-payment-status').removeClass().text('Please enter a valid expiry date (MM/YY).').addClass('payment-status error');
+        return;
+    }
+    if (cardCvv.length < 3) {
+        $('#card-payment-status').removeClass().text('Please enter a valid CVV.').addClass('payment-status error');
+        return;
+    }
+
+    $('#pay-card-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...');
+    $('#card-payment-status').removeClass().text('Processing your card payment. Please wait...').addClass('payment-status pending');
+
+    // Show processing overlay
+    $('#payment-processing').show();
+    $('#processing-text').text('Processing card payment...');
+
+    // Call verify_payment API (simulated card processing)
+    frappe.call({
+        method: "construction_marketplace.api.verify_payment",
+        args: {
+            payment_method: 'Card',
+            order_amount: checkoutCartTotal,
+            card_last4: cardNum.slice(-4)
+        },
+        callback: function(r) {
+            $('#payment-processing').hide();
+            if (r.message && r.message.verified) {
+                $('#card-payment-status').removeClass().text('Payment successful! Transaction ID: ' + r.message.transaction_id).addClass('payment-status success');
+                // Now place the order
+                placeOrderAfterPayment('Card', true, r.message.transaction_id);
+            } else {
+                $('#card-payment-status').removeClass().text('Card payment failed. Please try again.').addClass('payment-status error');
+                $('#pay-card-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i>Pay Now - ₹ ' + formatCurrency(checkoutCartTotal));
+            }
+        },
+        error: function() {
+            $('#payment-processing').hide();
+            $('#card-payment-status').removeClass().text('Error processing card payment. Please try again.').addClass('payment-status error');
+            $('#pay-card-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i>Pay Now - ₹ ' + formatCurrency(checkoutCartTotal));
+        }
+    });
+}
+
+// ==================== PLACE ORDER AFTER PAYMENT ====================
+
+function placeOrderAfterPayment(paymentMethod, paymentVerified, transactionId) {
+    var btn = $('#place-order-btn');
+    var actionArea = $('#payment-action-area');
+
+    // Show a brief processing state in the action area
+    if (!paymentVerified) {
+        // For COD / Bank Transfer: show loading on the active section's button
+        var activeSection = $('.payment-section.active:visible, .payment-section:visible').first();
+        var verifyBtn = activeSection.find('.verify-payment-btn');
+        if (verifyBtn.length) {
+            verifyBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Placing Order...');
+        }
+    }
+
+    var args = $.extend({}, checkoutFormData, {
+        payment_verified: paymentVerified ? 1 : 0,
+        transaction_id: transactionId || ''
+    });
+
+    frappe.call({
+        method: "construction_marketplace.api.place_order",
+        args: args,
+        callback: function(r) {
+            if (r.message && r.message.success) {
+                showSuccessScreen(r.message, paymentMethod, paymentVerified);
+                $('.cart-badge').remove();
+            } else {
+                showPaymentError(paymentMethod, 'Order could not be placed. Please try again.');
+            }
+        },
+        error: function() {
+            showPaymentError(paymentMethod, 'Error placing order. Please try again.');
+        }
+    });
+}
+
+// ==================== SUCCESS / ERROR SCREENS ====================
+
+function showSuccessScreen(orderResult, paymentMethod, paymentVerified) {
+    var paymentMsg = '';
+    var icon = 'fa-check-circle';
+    var iconColor = '#4CAF50';
+    var title = 'Order Placed Successfully!';
+
+    if (paymentMethod === 'Cash') {
+        paymentMsg = 'You will pay <strong>₹ ' + formatCurrency(checkoutCartTotal) + '</strong> when the materials are delivered. No advance payment needed.';
+    } else if (paymentVerified) {
+        paymentMsg = 'Payment of <strong>₹ ' + formatCurrency(checkoutCartTotal) + '</strong> completed successfully. Your order is confirmed and will be processed shortly.';
+    } else if (paymentMethod === 'Bank Transfer') {
+        paymentMsg = 'Your order is placed. Please transfer <strong>₹ ' + formatCurrency(checkoutCartTotal) + '</strong> to the provided bank account. Your order will be processed once payment is confirmed.';
+    }
+
+    // Add transaction ID if available
+    if (orderResult.transaction_id) {
+        paymentMsg += '<br><small class="text-muted">Transaction Ref: ' + orderResult.transaction_id + '</small>';
+    }
+
+    $('#checkout-content').html(
+        '<div class="checkout-form">' +
+        '<div class="text-center py-5">' +
+        '<i class="fas ' + icon + '" style="font-size:4rem;color:' + iconColor + ';"></i>' +
+        '<h3 class="mt-3 fw-bold" style="color:#1a237e;">' + title + '</h3>' +
+        '<p class="text-muted">' + (orderResult.message || 'Your order has been placed.') + '</p>' +
+        '<p><strong>Order ID:</strong> ' + orderResult.order_id + '</p>' +
+        '<div class="alert alert-success mt-3 text-start"><i class="fas fa-info-circle me-2"></i>' + paymentMsg + '</div>' +
+        '<div class="d-flex justify-content-center gap-3 mt-4">' +
+        '<a href="/dashboard" class="btn btn-primary rounded-pill px-5"><i class="fas fa-user me-2"></i>My Dashboard</a>' +
+        '<a href="/materials" class="btn btn-outline-primary rounded-pill px-5"><i class="fas fa-store me-2"></i>Continue Shopping</a>' +
+        '</div></div></div>'
+    );
+    $('#order-total-section').addClass('d-none');
+}
+
+function showPaymentError(paymentMethod, message) {
+    if (paymentMethod === 'UPI') {
+        $('#upi-payment-status').removeClass().text(message).addClass('payment-status error');
+        $('#verify-upi-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Paid - Verify Payment');
+    } else if (paymentMethod === 'Card') {
+        $('#card-payment-status').removeClass().text(message).addClass('payment-status error');
+        $('#pay-card-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i>Pay Now - ₹ ' + formatCurrency(checkoutCartTotal));
+    } else {
+        alert(message);
+        location.reload();
+    }
+}
+
+// ==================== UTILITY ====================
 
 function formatCurrency(amount) { return Number(amount).toLocaleString('en-IN'); }
 </script>

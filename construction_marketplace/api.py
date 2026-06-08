@@ -677,7 +677,7 @@ def update_cart_qty(material_id, price_id, quantity):
 # ==================== ORDER APIS ====================
 
 @frappe.whitelist()
-def place_order(delivery_address=None, delivery_city=None, delivery_contact=None, delivery_phone=None, notes=None, payment_method=None):
+def place_order(delivery_address=None, delivery_city=None, delivery_contact=None, delivery_phone=None, delivery_email=None, notes=None, payment_method=None, payment_verified=None, transaction_id=None):
     """Place an order from cart items"""
     user = frappe.session.user
     if user == "Guest":
@@ -705,8 +705,23 @@ def place_order(delivery_address=None, delivery_city=None, delivery_contact=None
     if not cart_items or len(cart_items) == 0:
         frappe.throw(_("Cart is empty"))
     
-    # Create order
+    # Determine payment status
     pm = payment_method or "Cash"
+    is_verified = payment_verified in (1, "1", True, "true", "True")
+    
+    if pm == "Cash":
+        payment_status = "Pending"
+    elif is_verified:
+        payment_status = "Completed"
+    else:
+        payment_status = "Pending"
+    
+    # Build order notes with transaction info if available
+    order_notes = notes or ""
+    if transaction_id:
+        order_notes += ("\n" if order_notes else "") + f"Transaction ID: {transaction_id}"
+    
+    # Create order
     order = frappe.get_doc({
         "doctype": "Marketplace Order",
         "naming_series": "MORD-.YYYY.-",
@@ -714,12 +729,12 @@ def place_order(delivery_address=None, delivery_city=None, delivery_contact=None
         "order_date": nowdate(),
         "status": "Draft",
         "payment_method": pm,
-        "payment_status": "Pending",
+        "payment_status": payment_status,
         "delivery_address": delivery_address or "",
         "delivery_city": delivery_city or "",
         "delivery_contact": delivery_contact or "",
         "delivery_phone": delivery_phone or "",
-        "notes": notes or ""
+        "notes": order_notes
     })
     
     for item in cart_items:
@@ -731,13 +746,57 @@ def place_order(delivery_address=None, delivery_city=None, delivery_contact=None
     
     order.insert(ignore_permissions=True)
     
+    # Calculate and update total amounts (in case they weren't computed)
+    total_amount = sum(flt(item.get("amount", 0)) for item in cart_items)
+    order.db_set("total_amount", total_amount, update_modified=False)
+    order.db_set("net_amount", total_amount, update_modified=False)
+    
     # Clear cart
     frappe.cache().hdel(f"cart_{frappe.session.user}", "items")
     
-    return {
+    result = {
         "success": True,
         "order_id": order.name,
         "message": _("Order {0} has been placed successfully!").format(order.name)
+    }
+    
+    if transaction_id:
+        result["transaction_id"] = transaction_id
+    
+    return result
+
+
+@frappe.whitelist()
+def verify_payment(payment_method, order_amount=None, card_last4=None):
+    """
+    Simulate payment verification for UPI and Card payments.
+    In production, this would integrate with a real payment gateway 
+    (e.g., Razorpay, Stripe) to verify the transaction.
+    """
+    import random
+    import string
+    from datetime import datetime
+    
+    if not payment_method:
+        frappe.throw(_("Payment method is required"))
+    
+    # Generate a unique mock transaction reference
+    tx_ref = "TXN" + datetime.now().strftime("%Y%m%d%H%M%S") + "" + ''.join(random.choices(string.ascii_uppercase, k=6))
+    
+    # In production, this is where you would:
+    # - For UPI: Call Razorpay/Stripe API to verify payment status via transaction ID or payment link
+    # - For Card: Process the card through a PCI-compliant gateway
+    # - Return the actual verification result from the gateway
+    
+    # For demonstration, always return success with a simulated small delay
+    # (The frontend handles the loading state; the actual sleep is minimal)
+    
+    return {
+        "success": True,
+        "verified": True,
+        "transaction_id": tx_ref,
+        "payment_method": payment_method,
+        "message": _("Payment verified successfully")
     }
 
 
