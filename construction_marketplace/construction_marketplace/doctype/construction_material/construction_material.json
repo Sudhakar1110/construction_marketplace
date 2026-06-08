@@ -14,6 +14,7 @@
   "column_break_1",
   "brand",
   "unit_of_measure",
+  "route",
   "is_active",
   "image_section",
   "image",
@@ -80,6 +81,12 @@
    "label": "Unit of Measure",
    "options": "Ton\nKg\nBag\nCubic Feet\nPieces\nSq. Feet\nCubic Meter\nLitre\nBox\nRoll",
    "reqd": 1
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Website Route",
+   "unique": 1
   },
   {
    "default": "1",

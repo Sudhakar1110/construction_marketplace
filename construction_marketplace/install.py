@@ -486,6 +486,9 @@ def create_all_sample_data():
            user, today, required_by))
     print(f"✅ Created Sample Material Request: {mr_name} (add items in UI)")
 
+    # Generate routes for all materials
+    generate_material_routes()
+
     frappe.db.commit()
     print("\n" + "=" * 50)
     print("🎉 ALL SAMPLE DATA CREATED SUCCESSFULLY!")
@@ -497,3 +500,44 @@ def create_all_sample_data():
     print("📋 Orders: 1 sample order (add items in UI)")
     print("📄 Purchase Orders: 1 sample PO (add items in UI)")
     print("📋 Material Requests: 1 sample MR (add items in UI)")
+
+
+def generate_material_routes():
+    """
+    Auto-generate URL-friendly routes for all existing Construction Materials.
+    Run this after adding the route field to the DocType:
+    bench --site your-site execute construction_marketplace.install.generate_material_routes
+    """
+    from frappe.utils import slugify
+    
+    materials = frappe.db.sql("""
+        SELECT name, material_name, route FROM `tabConstruction Material`
+        WHERE (route IS NULL OR route = '') AND docstatus < 2
+    """, as_dict=True)
+    
+    if not materials:
+        print("✅ All materials already have routes")
+        return
+    
+    updated = 0
+    for mat in materials:
+        if mat.route:
+            continue
+        
+        base_slug = slugify(mat.material_name)
+        route = base_slug
+        
+        # Ensure uniqueness
+        existing = frappe.db.get_value("Construction Material", {"route": route, "name": ["!=", mat.name]}, "name")
+        if existing:
+            route = f"{base_slug}-{frappe.generate_hash(length=4)}"
+        
+        frappe.db.set_value("Construction Material", mat.name, "route", route)
+        updated += 1
+        print(f"✅ Route generated for '{mat.material_name}' → /materials/{route}")
+    
+    if updated:
+        frappe.db.commit()
+        print(f"\n🎉 Generated routes for {updated} materials")
+    else:
+        print("✅ No routes needed generation")

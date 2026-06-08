@@ -24,6 +24,7 @@ def get_materials():
             cm.description,
             cm.image,
             cm.is_active,
+            cm.route,
             mc.title as category,
             mg.grade_name as grade,
             (SELECT MIN(mp.price_per_unit) FROM `tabMaterial Price` mp 
@@ -51,7 +52,10 @@ def get_material_details(material_id):
     if not material_id:
         frappe.throw(_("Material ID is required"))
     
-    material = frappe.db.sql("""
+    # Support lookup by both document name and route
+    from frappe.db import escape
+    material_id_escaped = escape(material_id)
+    material = frappe.db.sql(f"""
         SELECT
             cm.*,
             mc.title as category,
@@ -65,8 +69,9 @@ def get_material_details(material_id):
         LEFT JOIN
             `tabMaterial Grade` mg ON cm.material_grade = mg.name
         WHERE
-            cm.name = %s AND cm.docstatus < 2
-    """, material_id, as_dict=True)
+            (cm.name = {material_id_escaped} OR cm.route = {material_id_escaped})
+            AND cm.docstatus < 2
+    """, as_dict=True)
     
     if not material:
         frappe.throw(_("Material not found"))
@@ -175,6 +180,7 @@ def search_materials(query=None, category=None, min_price=None, max_price=None, 
             cm.current_stock,
             cm.image,
             cm.description,
+            cm.route,
             mc.title as category,
             mg.grade_name as grade,
             (SELECT MIN(mp.price_per_unit) FROM `tabMaterial Price` mp 
@@ -781,6 +787,7 @@ def get_featured_materials(limit=8):
             cm.image,
             cm.description,
             mc.title as category,
+            cm.route,
             (SELECT MIN(mp.price_per_unit) FROM `tabMaterial Price` mp 
              WHERE mp.material = cm.name AND mp.is_active = 1 AND mp.docstatus < 2) as min_price
         FROM

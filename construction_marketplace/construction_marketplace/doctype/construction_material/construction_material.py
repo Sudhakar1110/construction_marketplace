@@ -19,6 +19,7 @@ class ConstructionMaterial(Document):
     
     def before_save(self):
         self.set_title()
+        self.set_route()
     
     def set_title(self):
         if self.material_name and self.material_grade:
@@ -28,3 +29,14 @@ class ConstructionMaterial(Document):
         elif self.material_grade:
             grade = frappe.get_doc("Material Grade", self.material_grade)
             self.title = grade.grade_name
+    
+    def set_route(self):
+        """Auto-generate a clean URL-friendly slug for this material"""
+        if not self.route and self.material_name:
+            from frappe.utils import slugify
+            base_slug = slugify(self.material_name)
+            # Ensure uniqueness - just use the slug without 'materials/' prefix
+            existing = frappe.db.get_value("Construction Material", {"route": base_slug, "name": ["!=", self.name or ""]}, "name")
+            if existing:
+                base_slug = f"{base_slug}-{frappe.generate_hash(length=4)}"
+            self.route = base_slug

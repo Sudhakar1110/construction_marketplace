@@ -464,7 +464,8 @@ $(document).ready(function() {
                     }
                     html += '</div>';
                     html += '<div class="product-footer">';
-                    html += '<a href="/materials/' + encodeURIComponent(m.material_id) + '" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>';
+                    var detailUrl = m.route ? '/materials/' + m.route : '/materials/' + encodeURIComponent(m.material_id);
+                    html += '<a href="' + detailUrl + '" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>';
                     html += '<button class="btn btn-sm btn-primary add-to-cart-btn" data-material="' + m.material_id + '"><i class="fas fa-shopping-cart me-1"></i> Add</button>';
                     html += '</div></div></div>';
                 });
