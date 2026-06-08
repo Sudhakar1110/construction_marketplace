@@ -54,9 +54,8 @@ construction_marketplace.cart = {
             },
             callback: function(r) {
                 if (r.message && r.message.success) {
-                    construction_marketplace.utils.showToast(r.message.message || 'Added to cart!', 'success');
-                    construction_marketplace.cart.updateBadge(r.message.item_count);
                     if (callback) callback(r.message);
+                    else window.location.href = '/checkout';
                 }
             },
             error: function() {
@@ -296,7 +295,7 @@ $(document).ready(function() {
         });
     });
 
-    // Handle add to cart buttons (delegated)
+    // Handle add to cart buttons (delegated) — redirects to checkout after adding
     $(document).on('click', '.add-to-cart-btn', function() {
         var btn = $(this);
         var materialId = btn.data('material');
@@ -305,11 +304,8 @@ $(document).ready(function() {
 
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>');
         construction_marketplace.cart.addToCart(materialId, priceId, qty, function() {
-            btn.html('<i class="fas fa-check me-1"></i> Added').removeClass('btn-primary').addClass('btn-success');
-            setTimeout(function() {
-                btn.html('<i class="fas fa-shopping-cart me-1"></i> Add').prop('disabled', false).removeClass('btn-success').addClass('btn-primary');
-            }, 2000);
             $(document).trigger('cart-updated');
+            window.location.href = '/checkout';
         });
     });
 

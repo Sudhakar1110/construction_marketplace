@@ -194,14 +194,8 @@ function renderMaterialDetails(m) {
             args: { material_id: materialId, price_id: priceId, quantity: qty },
             callback: function(r) {
                 if(r.message && r.message.success) {
-                    btn.html('<i class="fas fa-check me-1"></i> Added!');
-                    setTimeout(function() {
-                        btn.html('<i class="fas fa-shopping-cart me-1"></i> Add to Cart').prop('disabled', false);
-                    }, 2000);
-                    if(typeof updateCartBadge === 'function') {
-                        updateCartBadge(r.message.item_count);
-                    }
                     $(document).trigger('cart-updated');
+                    window.location.href = '/checkout';
                 }
             },
             error: function() {

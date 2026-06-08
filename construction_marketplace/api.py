@@ -829,7 +829,13 @@ def get_featured_materials(limit=8):
             cm.description,
             mc.title as category,
             (SELECT MIN(mp.price_per_unit) FROM `tabMaterial Price` mp 
-             WHERE mp.material = cm.name AND mp.is_active = 1 AND mp.docstatus < 2) as min_price
+             WHERE mp.material = cm.name AND mp.is_active = 1 AND mp.docstatus < 2) as min_price,
+            (SELECT mp2.name FROM `tabMaterial Price` mp2 
+             WHERE mp2.material = cm.name AND mp2.is_active = 1 AND mp2.docstatus < 2 
+             ORDER BY mp2.price_per_unit ASC LIMIT 1) as price_id,
+            (SELECT mp2.supplier FROM `tabMaterial Price` mp2 
+             WHERE mp2.material = cm.name AND mp2.is_active = 1 AND mp2.docstatus < 2 
+             ORDER BY mp2.price_per_unit ASC LIMIT 1) as cheapest_supplier
         FROM
             `tabConstruction Material` cm
         LEFT JOIN
