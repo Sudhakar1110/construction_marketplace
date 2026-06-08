@@ -188,7 +188,7 @@ function renderMaterialDetails(m) {
         var qty = $('#qty-' + priceId).val() || 1;
         
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Adding...');
-        
+
         frappe.call({
             method: "construction_marketplace.api.add_to_cart",
             args: { material_id: materialId, price_id: priceId, quantity: qty },
@@ -201,6 +201,7 @@ function renderMaterialDetails(m) {
                     if(typeof updateCartBadge === 'function') {
                         updateCartBadge(r.message.item_count);
                     }
+                    $(document).trigger('cart-updated');
                 }
             },
             error: function() {

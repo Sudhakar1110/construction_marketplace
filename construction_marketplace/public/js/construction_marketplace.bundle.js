@@ -125,11 +125,162 @@ construction_marketplace.search = {
     }
 };
 
+// ==================== FLOATING CART WIDGET ====================
+
+construction_marketplace.floatingCart = {
+    isOpen: false,
+
+    createWidget: function() {
+        // Don't create if already exists
+        if ($('#floating-cart-widget').length) return;
+
+        var html = '';
+        html += '<div id="floating-cart-widget">';
+        html += '<div class="mini-cart-overlay" id="mini-cart-overlay"></div>';
+        html += '<button class="floating-cart-btn" id="floating-cart-btn" title="View Cart">';
+        html += '<i class="fas fa-shopping-cart"></i>';
+        html += '<span class="cart-count d-none" id="cart-count-badge">0</span>';
+        html += '</button>';
+        html += '<div class="mini-cart-panel" id="mini-cart-panel">';
+        html += '<div class="mini-cart-header">';
+        html += '<h6><i class="fas fa-shopping-cart me-2"></i>Shopping Cart</h6>';
+        html += '<button class="close-btn" id="mini-cart-close"><i class="fas fa-times"></i></button>';
+        html += '</div>';
+        html += '<div class="mini-cart-body" id="mini-cart-body">';
+        html += '<div class="mini-cart-empty">';
+        html += '<i class="fas fa-shopping-cart"></i>';
+        html += '<p>Your cart is empty</p>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="mini-cart-footer d-none" id="mini-cart-footer">';
+        html += '<div class="mini-cart-total">';
+        html += '<span>Total</span>';
+        html += '<span class="total-value" id="mini-cart-total">₹ 0</span>';
+        html += '</div>';
+        html += '<a href="/checkout" class="mini-cart-checkout-btn">';
+        html += '<i class="fas fa-credit-card me-2"></i>Proceed to Checkout</a>';
+        html += '</div>';
+        html += '</div></div>';
+
+        $('body').append(html);
+
+        // Bind events
+        this.bindEvents();
+    },
+
+    bindEvents: function() {
+        var self = this;
+
+        $('#floating-cart-btn').on('click', function(e) {
+            e.stopPropagation();
+            self.togglePanel();
+        });
+
+        $('#mini-cart-close, #mini-cart-overlay').on('click', function() {
+            self.hidePanel();
+        });
+
+        // Refresh cart icon badge on page visibility change
+        $(document).on('cart-updated', function() {
+            self.refreshBadge();
+        });
+    },
+
+    refreshBadge: function() {
+        var self = this;
+        frappe.call({
+            method: "construction_marketplace.api.get_cart",
+            callback: function(r) {
+                if (r.message && r.message.items && r.message.items.length > 0) {
+                    var count = r.message.items.length;
+                    $('#cart-count-badge').text(count).removeClass('d-none');
+                    $('#floating-cart-btn').addClass('has-items').css('display', 'flex');
+                } else {
+                    $('#cart-count-badge').addClass('d-none');
+                    $('#floating-cart-btn').removeClass('has-items');
+                    // Still show if user is logged in but cart empty
+                    if (r.message && r.message.items) {
+                        $('#floating-cart-btn').css('display', 'flex');
+                    }
+                }
+            }
+        });
+    },
+
+    loadCartItems: function() {
+        var self = this;
+        $('#mini-cart-body').html('<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary" role="status"></div><p class="mt-2 small text-muted">Loading...</p></div>');
+
+        frappe.call({
+            method: "construction_marketplace.api.get_cart",
+            callback: function(r) {
+                if (r.message && r.message.items && r.message.items.length > 0) {
+                    var items = r.message.items;
+                    var bodyHtml = '';
+                    items.forEach(function(item) {
+                        bodyHtml += '<div class="mini-cart-item">';
+                        bodyHtml += '<div class="item-icon"><i class="fas fa-cube"></i></div>';
+                        bodyHtml += '<div class="item-info">';
+                        bodyHtml += '<div class="item-name">' + (item.material_name || 'Item') + '</div>';
+                        bodyHtml += '<div class="item-meta">Qty: ' + item.quantity + ' × ₹ ' + construction_marketplace.utils.formatCurrency(item.rate || 0) + '</div>';
+                        bodyHtml += '</div>';
+                        bodyHtml += '<div class="item-amount">₹ ' + construction_marketplace.utils.formatCurrency(item.amount || 0) + '</div>';
+                        bodyHtml += '</div>';
+                    });
+                    $('#mini-cart-body').html(bodyHtml);
+                    $('#mini-cart-total').text('₹ ' + construction_marketplace.utils.formatCurrency(r.message.total || 0));
+                    $('#mini-cart-footer').removeClass('d-none');
+                } else if (r.message && r.message.items && r.message.items.length === 0) {
+                    $('#mini-cart-body').html('<div class="mini-cart-empty"><i class="fas fa-shopping-cart"></i><p>Your cart is empty</p></div>');
+                    $('#mini-cart-footer').addClass('d-none');
+                } else {
+                    // Not logged in
+                    $('#mini-cart-body').html('<div class="mini-cart-empty"><i class="fas fa-user-lock"></i><p>Please login to view cart</p><a href="/login" class="btn btn-primary btn-sm rounded-pill mt-2 px-4">Login</a></div>');
+                    $('#mini-cart-footer').addClass('d-none');
+                }
+            },
+            error: function() {
+                $('#mini-cart-body').html('<div class="mini-cart-empty"><i class="fas fa-exclamation-circle"></i><p>Could not load cart</p></div>');
+                $('#mini-cart-footer').addClass('d-none');
+            }
+        });
+    },
+
+    togglePanel: function() {
+        if (this.isOpen) {
+            this.hidePanel();
+        } else {
+            this.showPanel();
+        }
+    },
+
+    showPanel: function() {
+        this.isOpen = true;
+        $('#mini-cart-overlay').addClass('active');
+        $('#mini-cart-panel').addClass('active');
+        this.loadCartItems();
+    },
+
+    hidePanel: function() {
+        this.isOpen = false;
+        $('#mini-cart-overlay').removeClass('active');
+        $('#mini-cart-panel').removeClass('active');
+    }
+};
+
 // ==================== PAGE INITIALIZATION ====================
 
 $(document).ready(function() {
+    // Initialize floating cart widget
+    construction_marketplace.floatingCart.createWidget();
+
     // Initialize cart badge
     construction_marketplace.cart.initBadge();
+
+    // Initialize floating cart badge
+    setTimeout(function() {
+        construction_marketplace.floatingCart.refreshBadge();
+    }, 500);
 
     // Initialize search
     construction_marketplace.search.init();
@@ -141,6 +292,7 @@ $(document).ready(function() {
         var row = $(this).closest('tr');
         construction_marketplace.cart.removeFromCart(materialId, priceId, function() {
             row.fadeOut(300, function() { $(this).remove(); });
+            $(document).trigger('cart-updated');
         });
     });
 
@@ -157,6 +309,7 @@ $(document).ready(function() {
             setTimeout(function() {
                 btn.html('<i class="fas fa-shopping-cart me-1"></i> Add').prop('disabled', false).removeClass('btn-success').addClass('btn-primary');
             }, 2000);
+            $(document).trigger('cart-updated');
         });
     });
 

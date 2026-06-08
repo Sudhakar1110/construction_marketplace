@@ -11,6 +11,8 @@
 .dashboard-sidebar .nav-link i { width: 22px; }
 .dashboard-content { background: #fff; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); padding: 25px; min-height: 400px; }
 .stat-card { background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; }
+.checkout-cta-btn { font-size: 1.1rem; padding: 14px 40px; box-shadow: 0 4px 15px rgba(255,111,0,0.3); transition: all 0.3s ease; }
+.checkout-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,111,0,0.4); }
 .stat-card .stat-value { font-size: 2rem; font-weight: 800; color: #1a237e; }
 .stat-card .stat-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
 .order-table { font-size: 0.9rem; }
@@ -161,7 +163,7 @@ function loadCart() {
                 });
                 html += '</tbody></table></div>';
                 html += '<div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold">Total: ₹ ' + formatCurrency(r.message.total || 0) + '</h5>';
-                html += '<a href="/checkout" class="btn btn-primary rounded-pill"><i class="fas fa-credit-card me-2"></i>Proceed to Checkout</a></div>';
+                html += '<a href="/checkout" class="btn btn-accent btn-lg rounded-pill px-5 checkout-cta-btn"><i class="fas fa-credit-card me-2"></i> Proceed to Checkout <i class="fas fa-arrow-right ms-2"></i></a></div>';
                 $('#cart-items-list').html(html);
             }
         }
