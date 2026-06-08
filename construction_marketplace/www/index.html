@@ -463,10 +463,9 @@ $(document).ready(function() {
                         html += '<div class="product-price">₹ ' + formatCurrency(m.min_price) + '/' + m.unit_of_measure + '</div>';
                     }
                     html += '</div>';
+                    var detailUrl = m.route ? '/material-view?name=' + m.route : '/material-view?name=' + encodeURIComponent(m.material_id);
                     html += '<div class="product-footer">';
-                    var detailUrl = m.route ? '/materials/' + m.route : '/materials/' + encodeURIComponent(m.material_id);
-                    html += '<a href="' + detailUrl + '" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye me-1"></i> View</a>';
-                    html += '<button class="btn btn-sm btn-primary view-details-btn" data-material="' + m.material_id + '" data-route="' + (m.route || '') + '"><i class="fas fa-eye me-1"></i> View</button>';
+                    html += '<a href="' + detailUrl + '" class="btn btn-sm btn-primary"><i class="fas fa-eye me-1"></i> View</a>';
                     html += '</div></div></div>';
                 });
                 $('#featured-materials').html(html);
@@ -532,19 +531,7 @@ $(document).ready(function() {
         }
     });
 
-    // Bind view details - redirect to material detail page
-    $(document).on('click', '.view-details-btn', function() {
-        var btn = $(this);
-        var materialId = btn.data('material');
-        var route = btn.data('route');
-        if (!materialId) return;
-        
-        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>');
-        
-        // Use route if available, otherwise fall back to encoded name
-        var detailUrl = route ? '/materials/' + route : '/materials/' + encodeURIComponent(materialId);
-        window.location.href = detailUrl;
-    });
+    // View details uses anchor href directly - no click handler needed
 });
 
 function formatCurrency(amount) {

@@ -1,0 +1,223 @@
+<!-- Construction Marketplace - Material Details (Flat Route) -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.detail-header { background: #f8f9fa; padding: 30px 0; border-bottom: 1px solid #eee; }
+.product-gallery { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); text-align: center; min-height: 300px; display: flex; align-items: center; justify-content: center; }
+.product-gallery img { max-width: 100%; max-height: 350px; object-fit: contain; }
+.product-info h1 { font-size: 1.8rem; font-weight: 800; color: #1a237e; }
+.product-meta { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; }
+.product-meta .meta-item { background: #f8f9fa; padding: 8px 15px; border-radius: 8px; font-size: 0.85rem; }
+.product-meta .meta-item strong { color: #333; }
+.price-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); margin-bottom: 15px; transition: all 0.3s ease; }
+.price-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.price-card .supplier-name { font-weight: 700; color: #333; }
+.price-card .price-value { font-size: 1.4rem; font-weight: 800; color: #1a237e; }
+.price-card .supplier-rating { color: #ffa000; font-size: 0.85rem; }
+.price-card .supplier-location { font-size: 0.85rem; color: #888; }
+.spec-table { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+.spec-table table { margin: 0; }
+.spec-table td { padding: 12px 20px; border-color: #f0f0f0; font-size: 0.9rem; }
+.spec-table td:first-child { font-weight: 600; color: #555; background: #fafafa; width: 200px; }
+.stock-badge { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+.stock-in { background: #e8f5e9; color: #2e7d32; }
+.stock-low { background: #fff3e0; color: #e65100; }
+.stock-out { background: #ffebee; color: #c62828; }
+.action-bar { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 -2px 15px rgba(0,0,0,0.06); position: sticky; bottom: 0; }
+.qty-input { width: 80px; border-radius: 8px; border: 1px solid #ddd; text-align: center; padding: 8px; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="detail-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/materials">Materials</a></li>
+                <li class="breadcrumb-item active" id="breadcrumb-name">Loading...</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div id="material-detail">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Loading material details...</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    // Extract material name from query parameter first, fall back to path
+    var urlParams = new URLSearchParams(window.location.search);
+    var materialId = urlParams.get('name');
+    
+    if(materialId) {
+        loadMaterialDetails(materialId);
+    } else if(window.location.pathname.includes('/materials/')) {
+        // Fallback: extract from path (for backwards compatibility with clean route slugs)
+        var pathParts = window.location.pathname.split('/');
+        materialId = decodeURIComponent(pathParts[pathParts.length - 1]);
+        if(materialId) {
+            loadMaterialDetails(materialId);
+        } else {
+            showNotFound();
+        }
+    } else {
+        showNotFound();
+    }
+});
+
+function showNotFound() {
+    $('#material-detail').html('<div class="text-center py-5"><h4>Material not found</h4><a href="/materials" class="btn btn-primary mt-3">Back to Materials</a></div>');
+}
+
+function loadMaterialDetails(materialId) {
+    frappe.call({
+        method: "construction_marketplace.api.get_material_details",
+        args: { material_id: materialId },
+        callback: function(r) {
+            if(r.message) {
+                renderMaterialDetails(r.message);
+            } else {
+                showNotFound();
+            }
+        },
+        error: function() {
+            $('#material-detail').html('<div class="text-center py-5"><h4>Error loading material</h4><a href="/materials" class="btn btn-primary mt-3">Back to Materials</a></div>');
+        }
+    });
+}
+
+function renderMaterialDetails(m) {
+    $('#breadcrumb-name').text(m.material_name || 'Material');
+    
+    var stockClass = 'stock-in';
+    var stockText = 'In Stock';
+    if(m.stock_status === 'out_of_stock') { stockClass = 'stock-out'; stockText = 'Out of Stock'; }
+    else if(m.stock_status === 'low_stock') { stockClass = 'stock-low'; stockText = 'Low Stock'; }
+    
+    var html = '<div class="row">';
+    
+    // Left Column - Image & Info
+    html += '<div class="col-lg-7">';
+    html += '<div class="product-gallery mb-4">';
+    if(m.image) html += '<img src="' + m.image + '" alt="' + m.material_name + '">';
+    else html += '<i class="fas fa-cubes" style="font-size:5rem;color:#ddd;"></i>';
+    html += '</div>';
+    
+    html += '<div class="product-info mb-4">';
+    html += '<h1>' + m.material_name + '</h1>';
+    html += '<div class="product-meta">';
+    if(m.category) html += '<span class="meta-item"><strong>Category:</strong> ' + m.category + '</span>';
+    if(m.grade) html += '<span class="meta-item"><strong>Grade:</strong> ' + m.grade + '</span>';
+    if(m.brand) html += '<span class="meta-item"><strong>Brand:</strong> ' + m.brand + '</span>';
+    html += '<span class="meta-item"><strong>UOM:</strong> ' + (m.unit_of_measure || 'N/A') + '</span>';
+    html += '<span class="meta-item"><span class="stock-badge ' + stockClass + '">' + stockText + '</span></span>';
+    html += '</div></div>';
+    
+    // Specifications
+    if(m.specifications && m.specifications.length > 0) {
+        html += '<h5 class="fw-bold mb-3"><i class="fas fa-list me-2"></i>Specifications</h5>';
+        html += '<div class="spec-table mb-4">';
+        html += '<table class="table table-striped">';
+        html += '<tbody>';
+        m.specifications.forEach(function(spec) {
+            html += '<tr><td>' + spec.specification + '</td><td>' + spec.value + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+    }
+    
+    // Description
+    if(m.description) {
+        html += '<h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i>Description</h5>';
+        html += '<div class="mb-4 p-3 bg-light rounded-3">' + m.description + '</div>';
+    }
+    html += '</div>';
+    
+    // Right Column - Pricing
+    html += '<div class="col-lg-5">';
+    html += '<h5 class="fw-bold mb-3"><i class="fas fa-tags me-2"></i>Supplier Pricing</h5>';
+    
+    if(m.prices && m.prices.length > 0) {
+        m.prices.forEach(function(p) {
+            html += '<div class="price-card" data-supplier="' + (p.supplier_id || '') + '" data-price-id="' + (p.price_id || '') + '">';
+            html += '<div class="d-flex justify-content-between align-items-start mb-2">';
+            html += '<div>';
+            html += '<div class="supplier-name">' + p.supplier_name + '</div>';
+            if(p.company_name) html += '<div class="small text-muted">' + p.company_name + '</div>';
+            html += '</div>';
+            if(p.rating) {
+                html += '<div class="supplier-rating"><i class="fas fa-star"></i> ' + p.rating + '</div>';
+            }
+            html += '</div>';
+            html += '<div class="price-value">₹ ' + formatCurrency(p.price_per_unit) + ' / ' + (p.unit_of_measure || m.unit_of_measure || 'unit') + '</div>';
+            if(p.city) html += '<div class="supplier-location"><i class="fas fa-map-marker-alt me-1"></i>' + p.city + '</div>';
+            if(p.minimum_order_qty) html += '<div class="small text-muted mt-1">Min. Order: ' + p.minimum_order_qty + ' ' + (p.unit_of_measure || '') + '</div>';
+            
+            // Add to cart
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<input type="number" class="qty-input" value="' + Math.max(1, p.minimum_order_qty || 1) + '" min="' + Math.max(1, p.minimum_order_qty || 1) + '" id="qty-' + p.price_id + '">';
+            html += '<button class="btn btn-primary btn-sm rounded-pill px-4 add-to-cart" data-material="' + m.material_id + '" data-price="' + p.price_id + '"><i class="fas fa-shopping-cart me-1"></i> Add to Cart</button>';
+            html += '<button class="btn btn-outline-secondary btn-sm rounded-pill request-quote" data-material="' + m.material_id + '" data-price="' + p.price_id + '"><i class="fas fa-file-invoice me-1"></i> Quote</button>';
+            html += '</div></div>';
+        });
+    } else {
+        html += '<div class="text-center py-4 text-muted"><i class="fas fa-info-circle" style="font-size:2rem;"></i><p class="mt-2">No pricing available yet. Please request a quote.</p>';
+        html += '<a href="/request-quote?material=' + encodeURIComponent(m.material_id) + '" class="btn btn-primary rounded-pill"><i class="fas fa-file-invoice me-1"></i> Request Quote</a></div>';
+    }
+    
+    html += '</div></div>';
+    
+    $('#material-detail').html(html);
+    
+    // Bind add to cart
+    $('.add-to-cart').click(function() {
+        var btn = $(this);
+        var materialId = btn.data('material');
+        var priceId = btn.data('price');
+        var qty = $('#qty-' + priceId).val() || 1;
+        
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Adding...');
+        
+        frappe.call({
+            method: "construction_marketplace.api.add_to_cart",
+            args: { material_id: materialId, price_id: priceId, quantity: qty },
+            callback: function(r) {
+                if(r.message && r.message.success) {
+                    btn.html('<i class="fas fa-check me-1"></i> Added!');
+                    setTimeout(function() {
+                        btn.html('<i class="fas fa-shopping-cart me-1"></i> Add to Cart').prop('disabled', false);
+                    }, 2000);
+                    if(typeof updateCartBadge === 'function') {
+                        updateCartBadge(r.message.item_count);
+                    }
+                }
+            },
+            error: function() {
+                btn.html('<i class="fas fa-shopping-cart me-1"></i> Add to Cart').prop('disabled', false);
+                alert('Please login to add items to cart');
+            }
+        });
+    });
+    
+    // Bind request quote
+    $('.request-quote').click(function() {
+        window.location.href = '/request-quote?material=' + encodeURIComponent($(this).data('material'));
+    });
+}
+
+function formatCurrency(amount) {
+    return Number(amount).toLocaleString('en-IN');
+}
+</script>
+{% endblock %}

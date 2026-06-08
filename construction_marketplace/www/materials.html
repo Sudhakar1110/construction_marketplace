@@ -159,7 +159,7 @@ function renderMaterials(data) {
         else stockBadge = '<span class="badge bg-danger rounded-pill" style="font-size:0.7rem;">Out of Stock</span>';
         
         html += '<div class="col-md-4 col-sm-6">';
-        var detailUrl = m.route ? '/materials/' + m.route : '/materials/' + encodeURIComponent(m.material_id);
+        var detailUrl = m.route ? '/material-view?name=' + m.route : '/material-view?name=' + encodeURIComponent(m.material_id);
         html += '<a href="' + detailUrl + '" class="text-decoration-none">';
         html += '<div class="product-card">';
         html += '<div class="product-image">';
