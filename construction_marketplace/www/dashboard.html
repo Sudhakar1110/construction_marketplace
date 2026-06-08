@@ -161,7 +161,7 @@ function loadCart() {
                 });
                 html += '</tbody></table></div>';
                 html += '<div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold">Total: ₹ ' + formatCurrency(r.message.total || 0) + '</h5>';
-                html += '<a href="/request-quote" class="btn btn-primary rounded-pill"><i class="fas fa-file-invoice me-2"></i>Request Quote</a></div>';
+                html += '<a href="/checkout" class="btn btn-primary rounded-pill"><i class="fas fa-credit-card me-2"></i>Proceed to Checkout</a></div>';
                 $('#cart-items-list').html(html);
             }
         }

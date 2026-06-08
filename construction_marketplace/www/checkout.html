@@ -1,0 +1,285 @@
+<!-- Construction Marketplace - Checkout Page -->
+{% extends "templates/web.html" %}
+
+{% block style %}
+<style>
+.checkout-header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    padding: 30px 0; color: #fff;
+}
+.checkout-form { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.06); }
+.checkout-form label { font-weight: 600; color: #333; font-size: 0.9rem; margin-bottom: 5px; }
+.checkout-form .form-control, .checkout-form .form-select {
+    border-radius: 8px; border: 1px solid #e0e0e0; padding: 10px 15px;
+}
+.checkout-form .form-control:focus, .checkout-form .form-select:focus {
+    border-color: #1a237e; box-shadow: 0 0 0 0.2rem rgba(26,35,126,0.1);
+}
+.checkout-form textarea { min-height: 80px; }
+.section-title-sm { font-weight: 700; color: #1a237e; font-size: 1.05rem; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; margin-bottom: 20px; }
+.order-summary { background: #f8f9fa; border-radius: 12px; padding: 25px; position: sticky; top: 20px; }
+.order-summary h5 { font-weight: 700; color: #333; margin-bottom: 15px; }
+.order-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.order-item:last-child { border-bottom: none; }
+.order-item .item-name { font-weight: 600; color: #333; }
+.order-item .item-details { color: #888; font-size: 0.82rem; }
+.order-total { display: flex; justify-content: space-between; padding: 12px 0; font-weight: 700; font-size: 1.1rem; border-top: 2px solid #333; margin-top: 10px; }
+.order-total .total-amount { color: #1a237e; font-size: 1.3rem; }
+.empty-cart { text-align: center; padding: 40px; }
+.empty-cart i { font-size: 3rem; color: #ddd; }
+.place-order-btn { background: #ff6f00; border-color: #ff6f00; color: #fff; padding: 14px 30px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; width: 100%; transition: all 0.3s ease; }
+.place-order-btn:hover { background: #e65100; border-color: #e65100; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,111,0,0.3); }
+.form-section { margin-bottom: 25px; }
+.input-group-icon { position: relative; }
+.input-group-icon .form-control { padding-left: 40px; }
+.input-group-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #1a237e; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<section class="checkout-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-2">
+                <li class="breadcrumb-item"><a href="/" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item"><a href="/cart" class="text-white-50">Cart</a></li>
+                <li class="breadcrumb-item active text-white">Checkout</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1">Checkout</h1>
+        <p class="mb-0 opacity-75">Complete your order by providing delivery and contact details</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div id="login-required" class="text-center py-5 d-none">
+            <i class="fas fa-user-lock" style="font-size:3rem;color:#ddd;"></i>
+            <h4 class="mt-3">Please Login</h4>
+            <p class="text-muted">You need to login to proceed with checkout.</p>
+            <a href="/login?redirect-to=/checkout" class="btn btn-primary rounded-pill px-5"><i class="fas fa-sign-in-alt me-2"></i>Login</a>
+        </div>
+
+        <div id="empty-cart" class="d-none">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h5 class="mt-3 text-muted">Your cart is empty</h5>
+                <p>Add some materials to your cart before checking out.</p>
+                <a href="/materials" class="btn btn-primary rounded-pill px-5"><i class="fas fa-store me-2"></i>Browse Materials</a>
+            </div>
+        </div>
+
+        <div id="checkout-content">
+            <div class="row">
+                <!-- Checkout Form -->
+                <div class="col-lg-7">
+                    <div class="checkout-form">
+                        <form id="checkout-form" onsubmit="return placeOrder(event)">
+                            <!-- Contact Information -->
+                            <div class="form-section">
+                                <h6 class="section-title-sm"><i class="fas fa-user me-2"></i>Contact Information</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label>Full Name *</label>
+                                        <div class="input-group-icon">
+                                            <i class="fas fa-user"></i>
+                                            <input type="text" class="form-control" id="delivery-contact" required placeholder="Your full name">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Phone Number *</label>
+                                        <div class="input-group-icon">
+                                            <i class="fas fa-phone"></i>
+                                            <input type="tel" class="form-control" id="delivery-phone" required placeholder="Your phone number">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Email (optional)</label>
+                                        <div class="input-group-icon">
+                                            <i class="fas fa-envelope"></i>
+                                            <input type="email" class="form-control" id="delivery-email" placeholder="Your email">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Alternate Phone</label>
+                                        <div class="input-group-icon">
+                                            <i class="fas fa-phone-alt"></i>
+                                            <input type="tel" class="form-control" id="delivery-alt-phone" placeholder="Alternate contact number">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Address -->
+                            <div class="form-section">
+                                <h6 class="section-title-sm"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address</h6>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label>Address *</label>
+                                        <textarea class="form-control" id="delivery-address" required placeholder="Street, building, landmark..."></textarea>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>City *</label>
+                                        <input type="text" class="form-control" id="delivery-city" required placeholder="City">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>State *</label>
+                                        <select class="form-select" id="delivery-state" required>
+                                            <option value="">Select state...</option>
+                                            <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+                                            <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option>
+                                            <option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option>
+                                            <option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option>
+                                            <option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
+                                            <option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+                                            <option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+                                            <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option>
+                                            <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+                                            <option>Delhi</option><option>Puducherry</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Pincode *</label>
+                                        <input type="text" class="form-control" id="delivery-pincode" required placeholder="PIN code" maxlength="6">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order Notes -->
+                            <div class="form-section">
+                                <h6 class="section-title-sm"><i class="fas fa-sticky-note me-2"></i>Order Notes (Optional)</h6>
+                                <textarea class="form-control" id="order-notes" placeholder="Any special instructions or notes for the supplier..." rows="3"></textarea>
+                            </div>
+
+                            <button type="submit" class="place-order-btn" id="place-order-btn">
+                                <i class="fas fa-check-circle me-2"></i>Place Order
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-lg-5">
+                    <div class="order-summary">
+                        <h5><i class="fas fa-shopping-bag me-2"></i>Order Summary</h5>
+                        <div id="cart-items-summary">
+                            <div class="text-center py-4 text-muted">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                <p class="mt-2 mb-0">Loading cart items...</p>
+                            </div>
+                        </div>
+                        <div id="order-total-section" class="d-none">
+                            <div class="order-total">
+                                <span>Total Amount</span>
+                                <span class="total-amount" id="order-total">₹ 0</span>
+                            </div>
+                            <p class="small text-muted mt-2 mb-0"><i class="fas fa-info-circle me-1"></i>Taxes and delivery charges will be calculated after order confirmation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    loadCheckoutPage();
+});
+
+function loadCheckoutPage() {
+    frappe.call({
+        method: "construction_marketplace.api.get_cart",
+        callback: function(r) {
+            if (r.message && r.message.items && r.message.items.length > 0) {
+                renderOrderSummary(r.message.items, r.message.total);
+                $('#empty-cart, #login-required').addClass('d-none');
+                $('#checkout-content').removeClass('d-none');
+            } else if (r.message && r.message.items && r.message.items.length === 0) {
+                $('#checkout-content').addClass('d-none');
+                $('#empty-cart').removeClass('d-none');
+            } else {
+                // Not logged in
+                $('#checkout-content').addClass('d-none');
+                $('#login-required').removeClass('d-none');
+            }
+        },
+        error: function() {
+            $('#checkout-content').addClass('d-none');
+            $('#login-required').removeClass('d-none');
+        }
+    });
+}
+
+function renderOrderSummary(items, total) {
+    var html = '';
+    items.forEach(function(item) {
+        html += '<div class="order-item">';
+        html += '<div><div class="item-name">' + item.material_name + '</div>';
+        html += '<div class="item-details">' + (item.supplier || '') + ' — Qty: ' + item.quantity + ' × ₹ ' + formatCurrency(item.rate || 0) + '/' + (item.uom || 'unit') + '</div></div>';
+        html += '<div class="fw-bold">₹ ' + formatCurrency(item.amount || 0) + '</div>';
+        html += '</div>';
+    });
+    $('#cart-items-summary').html(html);
+    $('#order-total').text('₹ ' + formatCurrency(total || 0));
+    $('#order-total-section').removeClass('d-none');
+}
+
+function placeOrder(e) {
+    e.preventDefault();
+    var btn = $('#place-order-btn');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Placing Order...');
+
+    var address = $('#delivery-address').val() || '';
+    var state = $('#delivery-state').val() || '';
+    var pincode = $('#delivery-pincode').val() || '';
+    if (state || pincode) {
+        address += (address ? ', ' : '') + (state || '') + (pincode ? ' - ' + pincode : '');
+    }
+    var notes = $('#order-notes').val() || '';
+    var name = $('#delivery-contact').val();
+    var phone = $('#delivery-phone').val();
+
+    var formData = {
+        delivery_address: address,
+        delivery_city: $('#delivery-city').val(),
+        delivery_contact: name,
+        delivery_phone: phone,
+        notes: notes
+    };
+
+    frappe.call({
+        method: "construction_marketplace.api.place_order",
+        args: formData,
+        callback: function(r) {
+            if (r.message && r.message.success) {
+                // Show success and redirect
+                $('#checkout-form').html(
+                    '<div class="text-center py-5">' +
+                    '<i class="fas fa-check-circle" style="font-size:4rem;color:#4CAF50;"></i>' +
+                    '<h3 class="mt-3 fw-bold" style="color:#1a237e;">Order Placed Successfully!</h3>' +
+                    '<p class="text-muted">' + (r.message.message || 'Your order has been placed.') + '</p>' +
+                    '<p><strong>Order ID:</strong> ' + r.message.order_id + '</p>' +
+                    '<div class="d-flex justify-content-center gap-3 mt-4">' +
+                    '<a href="/dashboard" class="btn btn-primary rounded-pill px-5"><i class="fas fa-user me-2"></i>My Dashboard</a>' +
+                    '<a href="/materials" class="btn btn-outline-primary rounded-pill px-5"><i class="fas fa-store me-2"></i>Continue Shopping</a>' +
+                    '</div></div>'
+                );
+                $('#order-total-section').addClass('d-none');
+                $('.cart-badge').remove();
+            }
+        },
+        error: function(err) {
+            btn.prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Place Order');
+            alert('Error placing order. Please try again.');
+        }
+    });
+
+    return false;
+}
+
+function formatCurrency(amount) { return Number(amount).toLocaleString('en-IN'); }
+</script>
+{% endblock %}
