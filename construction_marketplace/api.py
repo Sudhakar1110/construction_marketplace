@@ -5,46 +5,6 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, nowdate, add_days
-import re
-
-
-# ==================== HELPER FUNCTIONS ====================
-
-def _slugify(text):
-    """Convert text to URL-friendly slug"""
-    s = text.lower().strip()
-    s = re.sub(r'[^a-zA-Z0-9\s-]', '', s)
-    s = re.sub(r'[\s-]+', '-', s)
-    return s.strip('-')
-
-
-def _ensure_route(material):
-    """Auto-generate a route for a material if it doesn't have one"""
-    if material.get('route'):
-        return material.get('route')
-    
-    name = material.get('material_name') or material.get('name') or ''
-    base_slug = _slugify(name)
-    
-    if not base_slug:
-        return None
-    
-    # Check uniqueness and append suffix if needed
-    route = base_slug
-    counter = 1
-    while frappe.db.exists("Construction Material", {"route": route, "name": ("!=", material.get('name'))}):
-        route = f"{base_slug}-{counter}"
-        counter += 1
-    
-    try:
-        frappe.db.set_value("Construction Material", material.get('name'), "route", route, update_modified=False)
-        material['route'] = route
-    except Exception:
-        pass
-    
-    return route
-
-
 # ==================== MATERIAL APIS ====================
 
 @frappe.whitelist(allow_guest=True)
@@ -79,11 +39,6 @@ def get_materials():
         ORDER BY
             cm.material_name ASC
     """, as_dict=True)
-    
-    # Auto-generate routes for materials missing them
-    for m in materials:
-        if not m.get('route'):
-            _ensure_route(m)
     
     return materials
 
@@ -244,11 +199,6 @@ def search_materials(query=None, category=None, min_price=None, max_price=None, 
     """
     
     materials = frappe.db.sql(data_query, as_dict=True)
-    
-    # Auto-generate routes for materials missing them
-    for m in materials:
-        if not m.get('route'):
-            _ensure_route(m)
     
     return {
         "materials": materials,
@@ -848,11 +798,6 @@ def get_featured_materials(limit=8):
             RAND()
         LIMIT %s
     """, int(limit), as_dict=True)
-    
-    # Auto-generate routes for materials missing them
-    for m in materials:
-        if not m.get('route'):
-            _ensure_route(m)
     
     return materials
 
