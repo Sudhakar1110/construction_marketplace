@@ -276,6 +276,17 @@ def create_demo_materials():
     frappe.db.commit()
 
 
+def after_migrate():
+    """Run after every bench migrate to fix child table module paths.
+    
+    Frappe sometimes assigns child table doctypes to the "Core" module
+    instead of the correct app module. This breaks controller resolution
+    for the ORM and prevents any record creation in parent doctypes that
+    use a Table field.
+    """
+    _fix_child_table_modules()
+
+
 def _fix_child_table_modules():
     """Fix module assignment for child table doctypes in the database.
     

@@ -54,9 +54,10 @@ has_permission = {
     "Customer Enquiry": "construction_marketplace.construction_marketplace.doctype.customer_enquiry.customer_enquiry.has_permission",
 }
 
-# Roles
-# ------
+# Install / Migrate
+# -----------------
 after_install = "construction_marketplace.install.after_install"
+after_migrate = "construction_marketplace.install.after_migrate"
 
 # Website
 # -------
