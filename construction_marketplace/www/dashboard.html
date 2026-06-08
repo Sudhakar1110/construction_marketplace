@@ -124,6 +124,15 @@ $(document).ready(function() {
     // Load everything on page load
     loadDashboard();
     
+    // Check URL hash for tab auto-switching (e.g., /dashboard#my-orders)
+    var hash = window.location.hash.replace('#', '');
+    if (hash && DASHBOARD_TABS.indexOf(hash) !== -1) {
+        // Delay slightly to let dashboard content load first
+        setTimeout(function() {
+            switchTab(hash);
+        }, 500);
+    }
+    
     // Listen for cart-updated events to refresh
     $(document).on('cart-updated', function() {
         loadCart();

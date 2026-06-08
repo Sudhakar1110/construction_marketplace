@@ -88,9 +88,14 @@ construction_marketplace.cart = {
     },
 
     updateBadge: function(count) {
+        // Update legacy cart-badge elements
         $('.cart-badge').remove();
         if (count > 0) {
             $('.cart-link').append('<span class="badge bg-danger rounded-pill cart-badge ms-1" style="font-size:0.7rem;">' + count + '</span>');
+        }
+        // Update navbar badge
+        if (construction_marketplace.navbar && construction_marketplace.navbar.updateCartCount) {
+            construction_marketplace.navbar.updateCartCount(count);
         }
     },
 
@@ -100,6 +105,8 @@ construction_marketplace.cart = {
             callback: function(r) {
                 if (r.message && r.message.items) {
                     construction_marketplace.cart.updateBadge(r.message.items.length);
+                } else {
+                    construction_marketplace.cart.updateBadge(0);
                 }
             }
         });
@@ -267,6 +274,83 @@ construction_marketplace.floatingCart = {
     }
 };
 
+// ==================== NAVBAR CUSTOMIZATION ====================
+
+construction_marketplace.navbar = {
+    initialized: false,
+
+    initNavbar: function() {
+        // Inject cart icon and dashboard dropdown into the Frappe navbar
+        // This runs once, with retry until the navbar elements exist
+        if (this.initialized) return;
+        
+        var navbarNav = $('.navbar-nav:last');
+        if (!navbarNav.length) {
+            navbarNav = $('#navbar-collapse ul.navbar-nav:last');
+        }
+        if (!navbarNav.length) {
+            navbarNav = $('nav.navbar ul.navbar-nav:last');
+        }
+        
+        if (!navbarNav.length) {
+            // Retry after delay if navbar not loaded yet
+            var self = this;
+            setTimeout(function() { self.initNavbar(); }, 500);
+            return;
+        }
+        
+        // Listen for cart-updated events
+        var self = this;
+        $(document).off('cart-updated.navbar').on('cart-updated.navbar', function() {
+            construction_marketplace.cart.initBadge();
+        });
+        
+        // Add cart link with badge
+        if (!$('#navbar-cart-link').length) {
+            var cartHtml = '<li class="nav-item" id="navbar-cart-item">';
+            cartHtml += '<a class="nav-link position-relative" id="navbar-cart-link" href="/checkout" title="View Cart">';
+            cartHtml += '<i class="fas fa-shopping-cart"></i>';
+            cartHtml += '<span class="navbar-cart-badge badge bg-danger rounded-pill" id="navbar-cart-badge" style="display:none;font-size:0.6rem;position:absolute;top:2px;right:2px;min-width:18px;height:18px;line-height:10px;padding:4px 5px;">0</span>';
+            cartHtml += '</a></li>';
+            navbarNav.append(cartHtml);
+        }
+        
+        // Add Dashboard dropdown (only for logged-in users)
+        if (!$('#navbar-dashboard-item').length && frappe.session.user !== 'Guest') {
+            var dashHtml = '<li class="nav-item dropdown" id="navbar-dashboard-item">';
+            dashHtml += '<a class="nav-link dropdown-toggle" href="#" id="dashboardDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+            dashHtml += '<i class="fas fa-user-circle me-1"></i> My Account</a>';
+            dashHtml += '<div class="dropdown-menu dropdown-menu-end" aria-labelledby="dashboardDropdown">';
+            dashHtml += '<a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard Home</a>';
+            dashHtml += '<div class="dropdown-divider"></div>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-orders"><i class="fas fa-shopping-bag"></i> My Orders</a>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-wishlist"><i class="fas fa-heart"></i> Wishlist</a>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-cart"><i class="fas fa-shopping-cart"></i> Cart</a>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-profile"><i class="fas fa-user"></i> My Profile</a>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-profile"><i class="fas fa-map-marker-alt"></i> Saved Addresses</a>';
+            dashHtml += '<a class="dropdown-item" href="/dashboard#my-profile"><i class="fas fa-cog"></i> Account Settings</a>';
+            dashHtml += '<div class="dropdown-divider"></div>';
+            dashHtml += '<a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>';
+            dashHtml += '</div></li>';
+            navbarNav.append(dashHtml);
+        }
+        
+        this.initialized = true;
+        this.updateCartCount(0);
+    },
+    
+    updateCartCount: function(count) {
+        var badge = $('#navbar-cart-badge');
+        if (badge.length) {
+            if (count > 0) {
+                badge.text(count).css('display', 'inline-flex');
+            } else {
+                badge.css('display', 'none');
+            }
+        }
+    }
+};
+
 // ==================== WISHLIST FUNCTIONALITY ====================
 
 construction_marketplace.wishlist = {
@@ -302,8 +386,13 @@ $(document).ready(function() {
     // Initialize floating cart widget
     construction_marketplace.floatingCart.createWidget();
 
-    // Initialize cart badge
+    // Initialize cart badge (both navbar and floating)
     construction_marketplace.cart.initBadge();
+
+    // Initialize navbar customization (cart icon + dashboard dropdown)
+    setTimeout(function() {
+        construction_marketplace.navbar.initNavbar();
+    }, 300);
 
     // Initialize wishlist badges (pre-fill hearts for saved items)
     setTimeout(function() {
