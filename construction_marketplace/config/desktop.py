@@ -11,7 +11,7 @@ def get_data():
             "label": _("Construction Marketplace"),
             "category": "Modules",
             "_category": "Modules",
-            "icon": "octicon octicon-git-branch",
+            "icon": "octicon octicon-tools",
             "color": "orange",
             "description": "Construction Materials Marketplace Management"
         }

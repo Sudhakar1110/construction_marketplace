@@ -9,7 +9,7 @@
   "doctype": "Workspace",
   "for_user": "",
   "hide_custom": 0,
-  "icon": "octicon octicon-git-branch",
+  "icon": "octicon octicon-tools",
   "idx": 0,
   "is_default": 0,
   "is_hidden": 0,
@@ -298,7 +298,20 @@
   "pin_to_top": 1,
   "public": 1,
   "restrict_to_domain": "",
-  "roles": [],
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Construction Manager"
+    },
+    {
+      "role": "Supplier"
+    },
+    {
+      "role": "Customer"
+    }
+  ],
   "sequence_id": 1,
   "shortcuts": [
     {
