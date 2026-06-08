@@ -508,7 +508,7 @@ def generate_material_routes():
     Run this after adding the route field to the DocType:
     bench --site your-site execute construction_marketplace.install.generate_material_routes
     """
-    from frappe.utils import slugify
+    import re
     
     materials = frappe.db.sql("""
         SELECT name, material_name, route FROM `tabConstruction Material`
@@ -524,7 +524,7 @@ def generate_material_routes():
         if mat.route:
             continue
         
-        base_slug = slugify(mat.material_name)
+        base_slug = re.sub(r'[^a-zA-Z0-9]+', '-', mat.material_name.lower()).strip('-')
         route = base_slug
         
         # Ensure uniqueness

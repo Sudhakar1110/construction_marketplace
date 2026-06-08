@@ -33,9 +33,9 @@ class ConstructionMaterial(Document):
     def set_route(self):
         """Auto-generate a clean URL-friendly slug for this material"""
         if not self.route and self.material_name:
-            from frappe.utils import slugify
-            base_slug = slugify(self.material_name)
-            # Ensure uniqueness - just use the slug without 'materials/' prefix
+            import re
+            base_slug = re.sub(r'[^a-zA-Z0-9]+', '-', self.material_name.lower()).strip('-')
+            # Ensure uniqueness
             existing = frappe.db.get_value("Construction Material", {"route": base_slug, "name": ["!=", self.name or ""]}, "name")
             if existing:
                 base_slug = f"{base_slug}-{frappe.generate_hash(length=4)}"
