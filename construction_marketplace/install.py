@@ -189,35 +189,89 @@ def create_demo_materials():
             "brand": "Buildmate",
             "uom": "Pieces",
             "reorder_level": 500
+        },
+        {
+            "material_name": "Ambuja PSC Grade Cement",
+            "category": "Cement",
+            "grade": "PSC Grade",
+            "brand": "Ambuja",
+            "uom": "Bag",
+            "reorder_level": 50
+        },
+        {
+            "material_name": "SAIL Fe 550D TMT Steel",
+            "category": "TMT Steel",
+            "grade": "Fe 550D",
+            "brand": "SAIL",
+            "uom": "Ton",
+            "reorder_level": 5
+        },
+        {
+            "material_name": "Traditional Red Bricks",
+            "category": "Bricks",
+            "grade": "Red Bricks",
+            "brand": "Standard",
+            "uom": "Pieces",
+            "reorder_level": 2000
+        },
+        {
+            "material_name": "20mm Crushed Jelly Stones",
+            "category": "Jelly Stones",
+            "grade": "",
+            "brand": "Premium",
+            "uom": "Ton",
+            "reorder_level": 10
+        },
+        {
+            "material_name": "Galvanized Binding Wire",
+            "category": "Other Materials",
+            "grade": "",
+            "brand": "Standard",
+            "uom": "Kg",
+            "reorder_level": 100
         }
     ]
     
     for mat in materials:
         category = frappe.db.get_value("Material Category", {"title": mat["category"]}, "name")
-        grade = frappe.db.get_value("Material Grade", {"grade_name": mat["grade"]}, "name")
-        
-        if category and grade:
-            title = f"{mat['material_name']} - {mat['grade']}"
-            if not frappe.db.exists("Construction Material", {"title": title}):
-                doc = frappe.get_doc({
-                    "doctype": "Construction Material",
-                    "material_name": mat["material_name"],
-                    "title": title,
-                    "material_category": category,
-                    "material_grade": grade,
-                    "brand": mat["brand"],
-                    "unit_of_measure": mat["uom"],
-                    "reorder_level": mat["reorder_level"],
-                    "is_active": 1,
-                    "current_stock": mat["reorder_level"] * 2,
-                    "specifications": []
-                })
-                # Use in_import flag to skip _set_defaults() which can fail
-                # when the child table controller module path isn't found
-                import_flag = frappe.flags.in_import
-                frappe.flags.in_import = True
-                doc.insert(ignore_permissions=True)
-                frappe.flags.in_import = import_flag
+        if not category:
+            print(f"  ⚠️  Category '{mat['category']}' not found, skipping {mat['material_name']}")
+            continue
+
+        # Grade is optional (material_grade field is not reqd in the doctype)
+        grade = None
+        if mat["grade"]:
+            grade = frappe.db.get_value("Material Grade", {"grade_name": mat["grade"]}, "name")
+            if not grade:
+                print(f"  ⚠️  Grade '{mat['grade']}' not found, creating without grade for {mat['material_name']}")
+
+        # Build title with grade suffix only when a grade exists
+        title = mat["material_name"] if not mat["grade"] else f"{mat['material_name']} - {mat['grade']}"
+
+        if not frappe.db.exists("Construction Material", {"title": title}):
+            doc_dict = {
+                "doctype": "Construction Material",
+                "material_name": mat["material_name"],
+                "title": title,
+                "material_category": category,
+                "brand": mat["brand"],
+                "unit_of_measure": mat["uom"],
+                "reorder_level": mat["reorder_level"],
+                "is_active": 1,
+                "current_stock": mat["reorder_level"] * 2,
+                "specifications": [],
+            }
+            # Only set material_grade if one was found
+            if grade:
+                doc_dict["material_grade"] = grade
+
+            doc = frappe.get_doc(doc_dict)
+            # Use in_import flag to skip _set_defaults() which can fail
+            # when the child table controller module path isn't found
+            import_flag = frappe.flags.in_import
+            frappe.flags.in_import = True
+            doc.insert(ignore_permissions=True)
+            frappe.flags.in_import = import_flag
     
     frappe.db.commit()
 
@@ -493,7 +547,7 @@ def create_all_sample_data():
     print("\n" + "=" * 50)
     print("🎉 ALL SAMPLE DATA CREATED SUCCESSFULLY!")
     print("=" * 50)
-    print("📦 Materials: 8 demo materials")
+    print("📦 Materials: 13 demo materials")
     print("🏭 Suppliers: 5 suppliers")
     print("👥 Customers: 3 customers")
     print("💰 Prices: 10 price records")

@@ -15,7 +15,7 @@ def create_demo_data():
     Run via: bench --site your-site execute construction_marketplace.demo.create_demo_data
 
     This function creates:
-    - 12 Construction Materials (8 from install.py + 4 additional)
+    - 17 Construction Materials (8 from install.py + 9 additional)
     - 8 Suppliers
     - 8 Marketplace Customers
     - 25 Material Prices
@@ -83,7 +83,7 @@ def create_demo_data():
     print("=" * 60)
     print("  ✅  DEMO DATA CREATION COMPLETE")
     print("=" * 60)
-    print(f"   Materials:         12")
+    print(f"   Materials:         17")
     print(f"   Suppliers:          8")
     print(f"   Customers:          8")
     print(f"   Prices:            25")
@@ -182,27 +182,84 @@ def _create_materials():
             "current_stock": 2500,
             "description": "<p>Solid concrete blocks 4-inch size for load-bearing walls and structural applications.</p>",
         },
+        {
+            "material_name": "Ambuja PSC Grade Cement",
+            "category": "Cement",
+            "grade": "PSC Grade",
+            "brand": "Ambuja",
+            "uom": "Bag",
+            "reorder_level": 50,
+            "current_stock": 300,
+            "description": "<p>Ambuja PSC (Portland Slag Cement) Grade Cement, ideal for marine structures, mass concreting, and hydraulic structures due to its superior durability and low heat of hydration.</p>",
+        },
+        {
+            "material_name": "SAIL Fe 550D TMT Steel",
+            "category": "TMT Steel",
+            "grade": "Fe 550D",
+            "brand": "SAIL",
+            "uom": "Ton",
+            "reorder_level": 5,
+            "current_stock": 30,
+            "description": "<p>SAIL Fe 550D Grade TMT steel with high ductility for earthquake-resistant structures. Excellent weldability and bendability.</p>",
+        },
+        {
+            "material_name": "Traditional Red Bricks",
+            "category": "Bricks",
+            "grade": "Red Bricks",
+            "brand": "Standard",
+            "uom": "Pieces",
+            "reorder_level": 2000,
+            "current_stock": 15000,
+            "description": "<p>Traditional chamber red bricks, kiln-fired for strength and durability. Standard size 9x4x3 inches, suitable for load-bearing walls.</p>",
+        },
+        {
+            "material_name": "20mm Crushed Jelly Stones",
+            "category": "Jelly Stones",
+            "grade": "",
+            "brand": "Premium",
+            "uom": "Ton",
+            "reorder_level": 10,
+            "current_stock": 50,
+            "description": "<p>20mm crushed stone aggregates (jelly stones) for concrete mixing. Sourced from granite quarries, washed and graded for quality.</p>",
+        },
+        {
+            "material_name": "Galvanized Binding Wire",
+            "category": "Other Materials",
+            "grade": "",
+            "brand": "Standard",
+            "uom": "Kg",
+            "reorder_level": 100,
+            "current_stock": 500,
+            "description": "<p>Galvanized iron binding wire for TMT steel tying and reinforcement works. 16 gauge, rust-resistant coating.</p>",
+        },
     ]
 
     for mat in additional:
         cat = frappe.db.get_value("Material Category", {"title": mat["category"]}, "name")
-        grade = frappe.db.get_value("Material Grade", {"grade_name": mat["grade"]}, "name")
-        if not cat or not grade:
-            print(f"⚠️  Skipping {mat['material_name']}: category or grade not found")
+        if not cat:
+            print(f"⚠️  Skipping {mat['material_name']}: category '{mat['category']}' not found")
             continue
 
-        title = f"{mat['material_name']} - {mat['grade']}"
+        # Grade is optional (material_grade field is not reqd in the doctype)
+        grade = None
+        if mat["grade"]:
+            grade = frappe.db.get_value("Material Grade", {"grade_name": mat["grade"]}, "name")
+            if not grade:
+                print(f"  ⚠️  Grade '{mat['grade']}' not found for {mat['material_name']}, creating without grade")
+
+        # Build title with grade suffix only when a grade exists
+        title = mat["material_name"] if not mat["grade"] else f"{mat['material_name']} - {mat['grade']}"
+
         existing = frappe.db.get_value("Construction Material", {"title": title}, "name")
         if existing:
             materials[title] = existing
             continue
 
-        doc = frappe.get_doc({
+        doc_dict = {
             "doctype": "Construction Material",
             "material_name": mat["material_name"],
             "title": title,
             "material_category": cat,
-            "material_grade": grade,
             "brand": mat["brand"],
             "unit_of_measure": mat["uom"],
             "reorder_level": mat["reorder_level"],
@@ -211,7 +268,12 @@ def _create_materials():
             "is_active": 1,
             "description": mat.get("description", ""),
             "specifications": [],
-        })
+        }
+        # Only set material_grade if one was found
+        if grade:
+            doc_dict["material_grade"] = grade
+
+        doc = frappe.get_doc(doc_dict)
         frappe.flags.in_import = True
         doc.insert(ignore_permissions=True)
         frappe.flags.in_import = False
