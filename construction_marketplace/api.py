@@ -683,10 +683,20 @@ def place_order(delivery_address=None, delivery_city=None, delivery_contact=None
     if user == "Guest":
         frappe.throw(_("Please login to place an order"), frappe.PermissionError)
     
-    # Get customer
+    # Get or auto-create customer profile
     customer = frappe.db.get_value("Marketplace Customer", {"email": user}, "name")
     if not customer:
-        frappe.throw(_("Customer profile not found. Please create a profile first."))
+        customer_name = delivery_contact or user.split('@')[0]
+        customer_phone = delivery_phone or frappe.db.get_value("User", user, "mobile_no") or ""
+        customer_doc = frappe.get_doc({
+            "doctype": "Marketplace Customer",
+            "customer_name": customer_name,
+            "email": user,
+            "phone": customer_phone,
+            "customer_type": "Individual"
+        })
+        customer_doc.insert(ignore_permissions=True)
+        customer = customer_doc.name
     
     # Get cart
     cart = frappe.cache().hget(f"cart_{frappe.session.user}", "items")
