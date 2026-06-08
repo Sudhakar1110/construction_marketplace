@@ -343,10 +343,10 @@
                                     <div class="payment-section" id="bank-payment-section">
                                         <p class="text-muted">Transfer the amount to the following account:</p>
                                         <div class="bg-white p-3 rounded-3 border d-inline-block text-start mb-2">
-                                            <p class="mb-1"><strong>Account:</strong> Construction Marketplace</p>
-                                            <p class="mb-1"><strong>Bank:</strong> State Bank of India</p>
-                                            <p class="mb-1"><strong>Account No:</strong> XXXX XXXX XXXX 1234</p>
-                                            <p class="mb-0"><strong>IFSC:</strong> SBIN0012345</p>
+                                            <p class="mb-1"><strong>Account:</strong> <span id="bank-account-holder">Construction Marketplace</span></p>
+                                            <p class="mb-1"><strong>Bank:</strong> <span id="bank-name">State Bank of India</span></p>
+                                            <p class="mb-1"><strong>Account No:</strong> <span id="bank-account-number">XXXX XXXX XXXX 1234</span></p>
+                                            <p class="mb-0"><strong>IFSC:</strong> <span id="bank-ifsc">SBIN0012345</span></p>
                                         </div>
                                         <button type="button" class="verify-payment-btn" id="place-bank-btn">
                                             <i class="fas fa-check-circle me-2"></i>I've Transferred - Place Order
@@ -400,12 +400,14 @@
 
 {% block script %}
 <script>
-// -------------------- CART TOTAL (stored globally for payment screens) --------------------
+// -------------------- GLOBALS --------------------
 var checkoutCartTotal = 0;
 var checkoutFormData = {};
+var paymentSettings = null;
 
 $(document).ready(function() {
     loadCheckoutPage();
+    loadPaymentSettings();
 
     // Payment method change → toggle visible sections
     $('input[name="payment_method"]').change(function() {
@@ -552,8 +554,8 @@ function placeOrder(e) {
 
 function showUPIScreen() {
     var total = checkoutCartTotal;
-    var upiId = 'marketplace@upi';
-    var merchantName = 'Construction%20Marketplace';
+    var upiId = (paymentSettings && paymentSettings.upi_id) || 'marketplace@upi';
+    var merchantName = encodeURIComponent((paymentSettings && paymentSettings.merchant_name) || 'Construction Marketplace');
     var upiLink = 'upi://pay?pa=' + upiId + '&pn=' + merchantName + '&am=' + total + '&cu=INR&tn=Order';
     var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(upiLink);
 
@@ -586,6 +588,13 @@ function showCardScreen() {
 }
 
 function showBankScreen() {
+    // Update bank details from payment settings
+    if (paymentSettings) {
+        $('#bank-account-holder').text(paymentSettings.account_holder || 'Construction Marketplace');
+        $('#bank-name').text(paymentSettings.bank_name || 'State Bank of India');
+        $('#bank-account-number').text(paymentSettings.account_number || 'XXXX XXXX XXXX 1234');
+        $('#bank-ifsc').text(paymentSettings.ifsc_code || 'SBIN0012345');
+    }
     $('#bank-payment-status').removeClass().text('Transfer the amount to the account shown above, then click confirm.').addClass('payment-status pending');
     $('#place-bank-btn').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>I\'ve Transferred - Place Order');
 
@@ -686,6 +695,19 @@ function processCardPayment() {
             $('#payment-processing').hide();
             $('#card-payment-status').removeClass().text('Error processing card payment. Please try again.').addClass('payment-status error');
             $('#pay-card-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i>Pay Now - ₹ ' + formatCurrency(checkoutCartTotal));
+        }
+    });
+}
+
+// ==================== LOAD PAYMENT SETTINGS ====================
+
+function loadPaymentSettings() {
+    frappe.call({
+        method: "construction_marketplace.api.get_payment_settings",
+        callback: function(r) {
+            if (r.message) {
+                paymentSettings = r.message;
+            }
         }
     });
 }

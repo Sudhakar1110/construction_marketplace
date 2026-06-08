@@ -886,6 +886,33 @@ def get_supplier_dashboard_stats():
     }
 
 
+# ==================== PAYMENT SETTINGS API ====================
+
+@frappe.whitelist(allow_guest=True)
+def get_payment_settings():
+    """Get payment settings (UPI ID, bank details) for the checkout page"""
+    try:
+        settings = frappe.get_single("Marketplace Settings")
+        return {
+            "upi_id": settings.get("upi_id") or "marketplace@upi",
+            "merchant_name": settings.get("merchant_name") or "Construction Marketplace",
+            "account_holder": settings.get("account_holder") or "Construction Marketplace",
+            "bank_name": settings.get("bank_name") or "State Bank of India",
+            "account_number": settings.get("account_number") or "XXXX XXXX XXXX 1234",
+            "ifsc_code": settings.get("ifsc_code") or "SBIN0012345"
+        }
+    except Exception:
+        # Fallback defaults if DocType table doesn't exist yet
+        return {
+            "upi_id": "marketplace@upi",
+            "merchant_name": "Construction Marketplace",
+            "account_holder": "Construction Marketplace",
+            "bank_name": "State Bank of India",
+            "account_number": "XXXX XXXX XXXX 1234",
+            "ifsc_code": "SBIN0012345"
+        }
+
+
 # ==================== WEBSITE UTILITY APIS ====================
 
 @frappe.whitelist(allow_guest=True)

@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_upi",
+  "upi_id",
+  "merchant_name",
+  "section_bank",
+  "account_holder",
+  "bank_name",
+  "account_number",
+  "ifsc_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_upi",
+   "fieldtype": "Section Break",
+   "label": "UPI Settings"
+  },
+  {
+   "fieldname": "upi_id",
+   "fieldtype": "Data",
+   "label": "UPI ID",
+   "description": "Your UPI ID for receiving payments (e.g., yourname@paytm, yourname@upi)"
+  },
+  {
+   "fieldname": "merchant_name",
+   "fieldtype": "Data",
+   "label": "Merchant Name",
+   "description": "Business name shown in UPI payment QR code"
+  },
+  {
+   "fieldname": "section_bank",
+   "fieldtype": "Section Break",
+   "label": "Bank Transfer Settings"
+  },
+  {
+   "fieldname": "account_holder",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Account Holder Name"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Bank Name"
+  },
+  {
+   "fieldname": "account_number",
+   "fieldtype": "Data",
+   "label": "Account Number"
+  },
+  {
+   "fieldname": "ifsc_code",
+   "fieldtype": "Data",
+   "label": "IFSC Code"
+  }
+ ],
+ "icon": "octicon octicon-settings",
+ "issingle": 1,
+ "modified": "2024-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Construction Marketplace",
+ "name": "Marketplace Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Construction Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
