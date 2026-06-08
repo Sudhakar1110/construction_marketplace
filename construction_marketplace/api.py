@@ -677,7 +677,7 @@ def update_cart_qty(material_id, price_id, quantity):
 # ==================== ORDER APIS ====================
 
 @frappe.whitelist()
-def place_order(delivery_address=None, delivery_city=None, delivery_contact=None, delivery_phone=None, notes=None):
+def place_order(delivery_address=None, delivery_city=None, delivery_contact=None, delivery_phone=None, notes=None, payment_method=None):
     """Place an order from cart items"""
     user = frappe.session.user
     if user == "Guest":
@@ -706,12 +706,15 @@ def place_order(delivery_address=None, delivery_city=None, delivery_contact=None
         frappe.throw(_("Cart is empty"))
     
     # Create order
+    pm = payment_method or "Cash"
     order = frappe.get_doc({
         "doctype": "Marketplace Order",
         "naming_series": "MORD-.YYYY.-",
         "customer": customer,
         "order_date": nowdate(),
         "status": "Draft",
+        "payment_method": pm,
+        "payment_status": "Pending",
         "delivery_address": delivery_address or "",
         "delivery_city": delivery_city or "",
         "delivery_contact": delivery_contact or "",
