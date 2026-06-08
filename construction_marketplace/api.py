@@ -51,8 +51,7 @@ def get_material_details(material_id):
         frappe.throw(_("Material ID is required"))
     
     # Support lookup by both document name and route
-    from frappe.db import escape
-    material_id_escaped = escape(material_id)
+    material_id_escaped = frappe.db.escape(material_id)
     material = frappe.db.sql(f"""
         SELECT
             cm.name as material_id,
@@ -84,6 +83,7 @@ def get_material_details(material_id):
     # If not found by name, try looking up by route (if column exists)
     if not material:
         try:
+            material_id_escaped = frappe.db.escape(material_id)
             material = frappe.db.sql(f"""
                 SELECT
                     cm.name as material_id,
