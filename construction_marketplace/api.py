@@ -77,16 +77,17 @@ def get_material_details(material_id):
         frappe.throw(_("Material not found"))
     
     material = material[0]
+    doc_name = material.get("name")
     
-    # Get specifications
+    # Get specifications (use doc_name, not material_id, because material_id could be a route slug)
     material['specifications'] = frappe.db.sql("""
         SELECT specification, value
         FROM `tabMaterial Specification`
         WHERE parent = %s
         ORDER BY idx ASC
-    """, material_id, as_dict=True)
+    """, doc_name, as_dict=True)
     
-    # Get pricing from suppliers
+    # Get pricing from suppliers (use doc_name for the link field lookup)
     material['prices'] = frappe.db.sql("""
         SELECT
             mp.name as price_id,
@@ -108,7 +109,7 @@ def get_material_details(material_id):
             mp.material = %s AND mp.is_active = 1 AND mp.docstatus < 2
         ORDER BY
             mp.price_per_unit ASC
-    """, material_id, as_dict=True)
+    """, doc_name, as_dict=True)
     
     # Stock status
     if material.current_stock and material.reorder_level:
