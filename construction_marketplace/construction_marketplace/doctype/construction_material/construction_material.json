@@ -9,6 +9,7 @@
   "section_basic",
   "material_name",
   "title",
+  "naming_series",
   "material_category",
   "material_grade",
   "column_break_1",
@@ -47,6 +48,15 @@
    "label": "Title",
    "unique": 1,
    "hidden": 1
+  },
+  {
+   "default": "CMAT-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "CMAT-.YYYY.-",
+   "set_only_once": 1
   },
   {
    "fieldname": "material_category",
