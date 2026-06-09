@@ -170,14 +170,7 @@
   {
    "description": "Prices for this material",
    "group": "Pricing",
-   "link_doctype": "Material Price",
-   "link_fieldname": "material"
-  },
-  {
-   "description": "Orders containing this material",
-   "group": "Orders",
-   "link_doctype": "Marketplace Order",
-   "link_fieldname": "items.item_code"
+   "link_doctype": "Material Price",    "link_fieldname": "material"
   }
  ],
  "modified": "2024-01-01 00:00:00",
